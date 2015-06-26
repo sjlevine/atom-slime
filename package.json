@@ -1,0 +1,24 @@
+{
+  "name": "atom-slime",
+  "main": "./lib/atom-slime",
+  "version": "0.0.0",
+  "description": "A short description of your package",
+  "keywords": [
+  ],
+  "repository": "https://github.com/atom/atom-slime",
+  "license": "MIT",
+  "engines": {
+    "atom": ">=1.0.0 <2.0.0"
+  },
+  "dependencies": {
+      "paredit.js": "^0.2.9",
+      "atom-space-pen-views": "^2.0.5"
+  },
+  "consumedServices": {
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
+    }
+  }
+}
