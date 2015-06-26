@@ -2,7 +2,6 @@
 paredit = require 'paredit.js'
 slime = require './slime-functions'
 
-
 module.exports =
 class AtomSlimeEditor
   subs: null
@@ -10,7 +9,7 @@ class AtomSlimeEditor
   pkg: null
   mouseMoveTimeout: null
 
-  constructor: (@editor, @statusView) ->
+  constructor: (@editor, @statusView, @manager) ->
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subs = new CompositeDisposable
     @subs.add editor.onDidStopChanging => @stoppedEditingCallback()
@@ -38,7 +37,12 @@ class AtomSlimeEditor
     sexp_info = @getCurrentSexp()
     if sexp_info
       sexp = sexp_info.sexp
-      @statusView.message(sexp)
+
+      promise = @manager.getAutoDoc sexp, @pkg, 29
+      if promise
+        promise.then (response) => @statusView.message response 
+      else
+        @statusView.message sexp
 
 
   # Return a string of the current sexp the user is in. The "deepest" one.
