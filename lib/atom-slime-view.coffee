@@ -10,7 +10,7 @@ class AtomSlimeView
     #@repl = new REPLView()
 
     # Start a status view
-    @status = new StatusView()
+    @statusView = new StatusView()
 
 
   # Returns an object that can be retrieved when package is activated
@@ -18,10 +18,10 @@ class AtomSlimeView
 
   # Tear down any state and detach
   destroy: ->
-    @status.destroy()
+    @statusView.destroy()
 
   getElement: ->
     @element
 
   setStatusBar: (@statusBar) ->
-      @status.attach(@statusBar)
+      @statusView.attach(@statusBar)

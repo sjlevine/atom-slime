@@ -3,8 +3,14 @@
 module.exports =
   class StatusView extends View
     @content:->
-      @div class:'atom-slime-status inline-block',  =>
-        @span class:'highlight', 'Hi there!'
+      @div class:'inline-block', =>
+        @div outlet:'main', 'Hi there'
+
+      console.log this
+
+
+    message: (msg) =>
+      @main.html(msg)
 
     attach: (@statusBar) ->
       @statusBar.addLeftTile(item: this, priority: 100)
