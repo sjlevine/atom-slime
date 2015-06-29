@@ -52,8 +52,8 @@ module.exports = AtomSlimeManager =
 
   getAutoDoc: (sexp_string, cursor, pkg) ->
     if @swank
-      return @swank.autodoc sexp_string, "COMMON-LISP-USER", 2
-      
+      return @swank.autodoc sexp_string, cursor, pkg
+
 
   deactivate: ->
     @subs.dispose()

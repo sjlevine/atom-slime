@@ -36,13 +36,11 @@ class AtomSlimeEditor
     # Get the current sexp we're in
     sexp_info = @getCurrentSexp()
     if sexp_info
-      sexp = sexp_info.sexp
-
-      promise = @manager.getAutoDoc sexp, @pkg, 29
+      promise = @manager.getAutoDoc sexp_info.sexp, sexp_info.relativeCursor, @pkg
       if promise
-        promise.then (response) => @statusView.message response 
+        promise.then (response) => @statusView.displayAutoDoc response
       else
-        @statusView.message sexp
+        @statusView.message ""
 
 
   # Return a string of the current sexp the user is in. The "deepest" one.
