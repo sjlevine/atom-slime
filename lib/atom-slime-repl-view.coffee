@@ -1,22 +1,42 @@
 {CompositeDisposable} = require 'atom'
+{TextEditorView, View} = require 'atom-space-pen-views'
 
 module.exports =
-class REPLView
-  constructor: (serializedState) ->
-    # Open a new window
+class REPLView extends View
+  swank: null
+  @content: ->
+    @div tabIndex: -1, class: 'panel atom-slime-repl panel-bottom', =>
+      @div class: 'atom-slime-repl-output', =>
+        @pre class: "terminal", outlet: "output"
+      @div class: 'atom-slime-repl-input', =>
+        @subview 'inputText', new TextEditorView(mini: true, placeholderText: 'input your command here')
 
-    @subscriptions = new CompositeDisposable
-    atom.workspace.open('SLIME REPL', split:'right').done (editor) =>
-        @subscriptions.add editor.onWillInsertText(@callback_insert_text)
+  initialize: ->
+    atom.commands.add @inputText.element,
+      'core:confirm': =>
+        if @swank
+          input = @inputText.getModel().getText()
+          @swank.eval input, 'COMMON-LISP-USER'
+          @writePrompt(input)
+          @inputText.getModel().setText('')
+
+  setSwank: (@swank) ->
+
+  scrollToBottom: ->
+    @output.scrollTop 10000000
 
 
-  # Called whenever text is about to be inserted into the text editor
-  callback_insert_text: (event) ->
-    console.log "Inserting " + event.text
+  writePrompt: (text) ->
+    @output.append "<span class=\"repl-prompt\">Pike&gt;</span> #{text}<br/>"
+    @scrollToBottom()
 
-  # Returns an object that can be retrieved when package is activated
-  serialize: ->
+  writeSuccess: (text) ->
+    @output.append "<span class=\"repl-success\">#{text}</span>"
+    @scrollToBottom()
 
-  # Tear down any state and detach
-  destroy: ->
-    @element.remove()
+
+
+
+
+  attach: ->
+    @panel = atom.workspace.addBottomPanel(item: this, priority: 20)

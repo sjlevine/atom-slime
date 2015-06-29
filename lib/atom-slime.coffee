@@ -39,8 +39,11 @@ module.exports = AtomSlimeManager =
 
   swankConnect: () ->
     @swank = new Swank.Client("localhost", 4005);
-    @swank.on 'disconnect', ->
+    @swank.on 'disconnect', =>
       console.log "Disconnected!"
+    @swank.on 'presentation_print', (msg) =>
+      @views.repl.writeSuccess msg
+    @views.repl.setSwank(@swank)
 
     @swank.connect("localhost", 4005).then =>
       console.log "Connected!!"
@@ -54,6 +57,9 @@ module.exports = AtomSlimeManager =
     if @swank
       return @swank.autodoc sexp_string, cursor, pkg
 
+  swankEval: (sexp_string, cursor) ->
+    if @swank
+      return @swank.eval sexp_string, pkg
 
   deactivate: ->
     @subs.dispose()

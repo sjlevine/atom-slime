@@ -7,7 +7,8 @@ class AtomSlimeView
     # Create root element
 
     # Start a REPL
-    #@repl = new REPLView()
+    @repl = new REPLView()
+    @repl.attach()
 
     # Start a status view
     @statusView = new StatusView()

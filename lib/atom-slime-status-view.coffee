@@ -27,7 +27,7 @@ module.exports =
       entries = ({classes:[], text:field} for field in fields when field != "===>" and field != "<===")
       for entry in entries
         if entry.text == currentSymbol
-          entry.classes.push "badge"
+          entry.classes.push "highlight"
 
         if entry.text.charAt(0) == "&"
           entry.classes.push "constant"

@@ -3,6 +3,108 @@
 // See https://github.com/atom/atom-dark-ui/blob/master/styles/ui-variables.less
 // for a full listing of what's available.
 @import "ui-variables";
+@import "syntax-variables";
 
-.atom-slime {
+.atom-slime-repl {
+  .repl-prompt {
+    color: @text-color-info;
+  }
+  .repl-prompt:hover {
+    color: lighten(@text-color-info, 15%);
+  }
+
+  .repl-success {
+    color: @text-color-success;
+  }
+  .repl-success:hover {
+    color: lighten(@text-color-success, 15%);
+  }
+
+
+
+  &.panel {
+    margin-bottom: 0px;
+  }
+  .atom-slime-repl-input {
+    display: flex;
+    justify-content: flex-end;
+    padding: @component-padding 0;
+    min-height: @component-line-height;
+  }
+  atom-text-editor[mini] {
+    flex: 1;
+    margin-right: @component-padding;
+    margin-left: @component-padding;
+  }
+  .atom-slime-repl-output {
+    white-space: pre;
+    word-wrap: break-word;
+    font-family: monospace;
+  }
+  .panel-heading {
+    display: none;
+  }
+  .btn-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    > * {
+      margin-left: @component-padding;
+    }
+
+    .btn:first-of-type:not(:last-of-type) {
+      border-radius: @component-border-radius 0 0 @component-border-radius;
+    }
+
+    .btn:last-of-type:not(:first-of-type) {
+      border-radius: 0 @component-border-radius @component-border-radius 0;
+    }
+
+    .hide + .btn:last-of-type {
+      border-radius: @component-border-radius
+    }
+  }
+  .terminal {
+    height: 15vh;
+    overflow-y: scroll;
+    bottom: @component-padding;
+    border-radius: 0;
+    color: @syntax-text-color;
+    background: @syntax-background-color;
+    border: 1px solid @tool-panel-border-color;
+
+    .file-info {
+      width: 140px;
+      display: inline-block;
+      float: left;
+    }
+    .stat-program {
+      color: #26c26a;
+    }
+    .stat-link {
+      color: hsl(285, 0.7, 0.7);
+    }
+    .clear {
+      clear: both;
+    }
+  }
+  .status-ignored {
+    opacity: 0.5;
+  }
+  .status-running {
+    color: hsl(180, 1, 0.5);
+  }
+  .status-info {
+    color: hsl(220, 1, 0.5);
+  }
+  .status-success {
+    color: hsl(100, 1, 0.5);
+  }
+  .status-error {
+    color: hsl(0, 1, 0.5);
+  }
+  .icon-terminal, .icon-plus {
+      cursor: pointer;
+  }
 }
