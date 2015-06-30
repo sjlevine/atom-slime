@@ -1,11 +1,12 @@
 {CompositeDisposable} = require 'atom'
-{TextEditorView, View} = require 'atom-space-pen-views'
+{$, TextEditorView, View} = require 'atom-space-pen-views'
 
 module.exports =
 class REPLView extends View
   swank: null
   @content: ->
-    @div tabIndex: -1, class: 'panel atom-slime-repl panel-bottom', =>
+    @div class: 'panel atom-slime-repl panel-bottom', =>
+      @div class: 'atom-slime-resize-handle'
       @div class: 'atom-slime-repl-output', =>
         @pre class: "terminal", outlet: "output"
       @div class: 'atom-slime-repl-input', =>
@@ -19,6 +20,24 @@ class REPLView extends View
           @swank.eval input, 'COMMON-LISP-USER'
           @writePrompt(input)
           @inputText.getModel().setText('')
+
+    # Set up resizing
+    @on 'mousedown', '.atom-slime-resize-handle', (e) => @resizeStarted(e)
+
+  resizeStarted: =>
+    $(document).on('mousemove', @resizeTreeView)
+    $(document).on('mouseup', @resizeStopped)
+
+  resizeStopped: =>
+    $(document).off('mousemove', @resizeTreeView)
+    $(document).off('mouseup', @resizeStopped)
+
+  resizeTreeView: ({pageY, which}) =>
+    return @resizeStopped() unless which is 1
+    # TODO - jumps a little at first
+    height = $(document.body).height() - pageY
+    if height >= 100
+      @height(height)
 
   setSwank: (@swank) ->
 

@@ -6,6 +6,19 @@
 @import "syntax-variables";
 
 .atom-slime-repl {
+  position: relative;
+  height: 30vh;
+
+  // A resize handle so you can make the REPL bigger or smaller
+  .atom-slime-resize-handle {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 10px;
+    cursor: row-resize;
+    z-index: 3;
+  }
+
   .repl-prompt {
     color: @text-color-info;
   }
@@ -26,10 +39,14 @@
     margin-bottom: 0px;
   }
   .atom-slime-repl-input {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
     display: flex;
     justify-content: flex-end;
     padding: @component-padding 0;
     min-height: @component-line-height;
+
   }
   atom-text-editor[mini] {
     flex: 1;
@@ -37,6 +54,7 @@
     margin-left: @component-padding;
   }
   .atom-slime-repl-output {
+    height: ~"calc(100% - 50px)";
     white-space: pre;
     word-wrap: break-word;
     font-family: monospace;
@@ -66,7 +84,7 @@
     }
   }
   .terminal {
-    height: 15vh;
+    height: 100%;
     overflow-y: scroll;
     bottom: @component-padding;
     border-radius: 0;
