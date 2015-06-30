@@ -1,5 +1,14 @@
 # atom-slime package
 
-A short description of your package.
+This package integrates SLIME (the Superior Lisp Interaction Mode for Emacs) with Atom! It allows you to interact with a running lisp process running a "swank server."
 
-![A screenshot of your package](https://f.cloud.github.com/assets/69169/2290250/c35d867a-a017-11e3-86be-cd7c5bf3ff9b.gif)
+Current features of this package:
+
+- Read-eval-print-loop (REPL) for interactive Lisp development (partial support)
+- Autodocumentation
+
+Future features:
+- "Go to method definition" etc.
+- Integrated debugger
+- Autocomplete suggestions
+- Improve sleakness to the above

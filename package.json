@@ -2,10 +2,10 @@
   "name": "atom-slime",
   "main": "./lib/atom-slime",
   "version": "0.0.0",
-  "description": "A short description of your package",
-  "keywords": [
+  "description": "SLIME plugin for interacting with Lisp!",
+  "keywords": ["lisp", "slime", "swank", "repl"
   ],
-  "repository": "https://github.com/atom/atom-slime",
+  "repository": "https://github.com/sjlevine/atom-slime",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
@@ -13,8 +13,8 @@
   "dependencies": {
       "paredit.js": "^0.2.9",
       "atom-space-pen-views": "^2.0.5",
-      "swank-client-js": "0.0.0",
-      "q": "0.0.0"
+      "swank-client-js": "0.1.0",
+      "q": "^1.4.1"
   },
   "consumedServices": {
     "status-bar": {
