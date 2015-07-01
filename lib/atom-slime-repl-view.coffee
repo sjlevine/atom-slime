@@ -12,6 +12,7 @@ class REPLView extends View
       @div class: 'atom-slime-repl-output', =>
         @pre class: "terminal", outlet: "output"
       @div class: 'atom-slime-repl-input', =>
+        @div class: 'atom-slime-repl-prompt', outlet: "prompt", 'CL-USER>'
         @subview 'inputText', new TextEditorView(mini: true, placeholderText: 'input your command here')
 
   initialize: ->
@@ -19,7 +20,13 @@ class REPLView extends View
       'core:confirm': =>
         if @swank
           input = @inputText.getModel().getText()
-          @swank.eval input, @pkg
+          promise = @swank.eval input, @pkg
+          promise.then =>
+            @prompt.removeClass "atom-slime-repl-pending"
+            @inputText.css opacity: 1.0
+
+          @prompt.addClass "atom-slime-repl-pending"
+          @inputText.css opacity: 0.3
           @writePrompt(input)
           @inputText.getModel().setText('')
 
@@ -49,7 +56,12 @@ class REPLView extends View
 
   setSwank: (@swank) ->
     @swank.on 'new_package', (pkg) =>
-      @pkg = pkg
+      @setPackage(pkg)
+
+  setPackage: (pkg) ->
+    @pkg = pkg
+    @prompt.html pkg + ">"
+
 
   scrollToBottom: ->
     @output.scrollTop 10000000
@@ -60,8 +72,11 @@ class REPLView extends View
     @scrollToBottom()
 
   writeSuccess: (text) ->
-    @output.append "<span class=\"repl-success\">#{text}</span>"
+    @output.append "<span class=\"repl-success\">#{@sanitizeText text}</span>"
     @scrollToBottom()
+
+  sanitizeText: (text) ->
+    return text.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   attach: ->
     @panel = atom.workspace.addBottomPanel(item: this, priority: 200, visible: false)
