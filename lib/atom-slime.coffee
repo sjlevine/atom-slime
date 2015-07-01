@@ -24,6 +24,8 @@ module.exports = AtomSlimeManager =
     editor = atom.workspace.getActiveTextEditor()
 
     @subs.add atom.commands.add 'atom-workspace', 'slime:connect': => @swankConnect()
+    @subs.add atom.commands.add 'atom-workspace', 'slime:hide': => @views.repl.hide()
+    @subs.add atom.commands.add 'atom-workspace', 'slime:show': => @views.repl.show()
 
     # Keep track of all Lisp editors, and when the person stops editing
     # call the callback.
@@ -42,12 +44,15 @@ module.exports = AtomSlimeManager =
     @swank.on 'disconnect', =>
       console.log "Disconnected!"
     @swank.on 'presentation_print', (msg) =>
-      @views.repl.writeSuccess msg
+      @views.repl.writeSuccess msg.replace(/\\\"/g, '"')
     @views.repl.setSwank(@swank)
 
     @swank.connect("localhost", 4005).then =>
-      console.log "Connected!!"
-      return @swank.initialize()
+      console.log "Slime Connected!!"
+      return @swank.initialize().then =>
+        @views.statusView.message("Slime connected")
+        @views.repl.show()
+
 
     #  .then ->
     #    return @swank.autodoc("(+ 1 2)", "COMMON-LISP-USER", 2);})

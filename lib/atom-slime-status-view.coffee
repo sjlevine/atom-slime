@@ -4,7 +4,7 @@ module.exports =
   class StatusView extends View
     @content:->
       @div class:'inline-block', =>
-        @div outlet:'main', 'Hi there'
+        @div outlet:'main', 'Slime'
 
 
     message: (msg) =>
