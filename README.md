@@ -38,6 +38,6 @@ sbcl --load start-swank.lisp
 
 Once that's running, you  have a Lisp processing running a swank server awaiting connections. The next step is to connect to it via the Atom slim plugin.
 
-Within atom, run the `Slime: Connect` from the command pallet. That will connect to slime! The REPL should now work.
+Within atom, run the `Slime: Connect` from the command pallet. That will connect to slime! The REPL should now become visible and should work.
 
 Additionally, if you open a *.lisp file and start typing functions or move the cursor over functions, you'll autodocumentation strings appear in the status bar.
