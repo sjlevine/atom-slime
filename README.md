@@ -4,14 +4,14 @@ This package integrates SLIME (the Superior Lisp Interaction Mode for Emacs) wit
 
 Current features of this package:
 
-- Read-eval-print-loop (REPL) for interactive Lisp development (partial support)
+- Read-eval-print-loop (REPL) for interactive Lisp development
+- Integrated debugger (work in progress)
 - Autodocumentation
 
 Future features:
 - "Go to method definition" etc.
-- Integrated debugger
 - Autocomplete suggestions
-- Improve sleakness to the above
+- Improved "sleakness"
 
 **Note**: This package is still in development! Contributions welcome.
 
