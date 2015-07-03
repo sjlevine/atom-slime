@@ -1,5 +1,6 @@
 {CompositeDisposable} = require 'atom'
 {$, TextEditorView, View} = require 'atom-space-pen-views'
+DebuggerView = require './atom-slime-debugger-view'
 
 module.exports =
 class REPLView extends View
@@ -9,8 +10,9 @@ class REPLView extends View
   @content: ->
     @div class: 'panel atom-slime-repl panel-bottom', =>
       @div class: 'atom-slime-resize-handle'
-      @div class: 'atom-slime-repl-output', =>
-        @pre class: "terminal", outlet: "output"
+      #@div class: 'atom-slime-repl-output', =>
+      #  @pre class: "terminal", outlet: "output"
+      @subview 'debugger', new DebuggerView
       @div class: 'atom-slime-repl-input', =>
         @div class: 'atom-slime-repl-prompt', outlet: "prompt", 'CL-USER>'
         @subview 'inputText', new TextEditorView(mini: true, placeholderText: 'input your command here')
@@ -79,4 +81,4 @@ class REPLView extends View
     return text.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   attach: ->
-    @panel = atom.workspace.addBottomPanel(item: this, priority: 200, visible: false)
+    @panel = atom.workspace.addBottomPanel(item: this, priority: 200, visible: true)
