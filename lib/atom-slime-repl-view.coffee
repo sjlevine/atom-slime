@@ -67,6 +67,14 @@ class REPLView extends View
   setSwank: (@swank) ->
     @swank.on 'new_package', (pkg) =>
       @setPackage(pkg)
+    @swank.on 'debug_setup', (obj) =>
+      @debugger.setup(@swank, obj)
+    @swank.on 'debug_activate', (obj) =>
+      # TODO - keep track of differnet levels
+      @showDebugger true
+    @swank.on 'debug_return', (obj) =>
+      # TODO - keep track of differnet levels
+      @showDebugger false
 
   setPackage: (pkg) ->
     @pkg = pkg
@@ -89,4 +97,4 @@ class REPLView extends View
     return text.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   attach: ->
-    @panel = atom.workspace.addBottomPanel(item: this, priority: 200, visible: true)
+    @panel = atom.workspace.addBottomPanel(item: this, priority: 200, visible: false)

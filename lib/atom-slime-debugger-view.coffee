@@ -34,32 +34,24 @@ class DebuggerView extends ScrollView
       #       @li class:'list-nested-item', =>
       #         @div class:'list-item', 'Hi there'
 
-  @setup: (@info) ->
-    @errorTitle.innerHTML @info.title
-    @errorType.innerHTML @info.type
+  setup: (@swank, @info) ->
+    @errorTitle.html @info.title
+    @errorType.html @info.type
+    level = @info.level
+    thread = @info.thread
     @restarts.empty()
-    for [restartCmd, restartDesc], i in @info.restarts
+    for restart, i in @info.restarts
       @restarts.append $$ ->
         @li class:"", =>
-          @button class:"inline-block-tight btn", restartCmd
-          @text restartDesc
-          # Bind click handler!
+          @button class:'inline-block-tight restart-button btn', restartindex:i, level:level, thread:thread, restart.cmd
+          @text restart.description
 
+    this.find('.restart-button').on 'click', (event) =>
+      @restart_click_handler event
 
-class MySelectListView extends SelectListView
- initialize: ->
-   super
-   @addClass('overlay from-top')
-   @setItems(['Hello', 'World'])
-   #@panel ?= atom.workspace.addModalPanel(item: this)
-   #@panel.show()
-   #@focusFilterEditor()
-
- viewForItem: (item) ->
-   "<li>#{item}</li>"
-
- confirmed: (item) ->
-   console.log("#{item} was selected")
-
- cancelled: ->
-   console.log("This view was cancelled")
+  restart_click_handler: (event) ->
+    restartindex = event.target.getAttribute('restartindex')
+    level = event.target.getAttribute('level')
+    thread = event.target.getAttribute('thread')
+    console.log "#{restartindex} #{level} #{thread}"
+    @swank.debug_invoke_restart(level, restartindex, thread)
