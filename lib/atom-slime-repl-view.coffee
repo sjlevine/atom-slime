@@ -8,7 +8,7 @@ class REPLView extends View
   pkg: "CL-USER"
 
   @content: ->
-    @div class: 'panel atom-slime-repl panel-bottom', =>
+    @div class: 'panel atom-slime-repl', =>
       @div class: 'atom-slime-resize-handle'
       #@div class: 'atom-slime-repl-output', =>
       #  @pre class: "terminal", outlet: "output"
