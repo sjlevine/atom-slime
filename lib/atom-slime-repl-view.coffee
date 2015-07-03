@@ -7,11 +7,15 @@ class REPLView extends View
   swank: null
   pkg: "CL-USER"
 
+  # Keep track of command history, for use with the up/down arrows
+  previousCommands: []
+  cycleIndex: null
+
   @content: ->
     @div class: 'panel atom-slime-repl', =>
       @div class: 'atom-slime-resize-handle'
       @div outlet:'outputContainer', class: 'atom-slime-repl-output', =>
-        @pre class: "terminal", outlet: "output"
+        @pre class: "terminal run-command native-key-bindings", tabindex:"-1", outlet: "output"
       @subview 'debugger', new DebuggerView
       @div class: 'atom-slime-repl-input', =>
         @div class: 'atom-slime-repl-prompt', outlet: "prompt", 'CL-USER>'
@@ -20,20 +24,53 @@ class REPLView extends View
   initialize: ->
     atom.commands.add @inputText.element,
       'core:confirm': =>
-        if @swank
-          input = @inputText.getModel().getText()
-          promise = @swank.eval input, @pkg
-          promise.then =>
-            @prompt.removeClass "atom-slime-repl-pending"
-            @inputText.css opacity: 1.0
+        @inputCommandHandler()
 
-          @prompt.addClass "atom-slime-repl-pending"
-          @inputText.css opacity: 0.3
-          @writePrompt(input)
-          @inputText.getModel().setText('')
+      atom.commands.add @inputText.element, 'core:move-up': => @cycleBack()
+      atom.commands.add @inputText.element, 'core:move-down': => @cycleForward()
 
     # Set up resizing
     @on 'mousedown', '.atom-slime-resize-handle', (e) => @resizeStarted(e)
+
+  inputCommandHandler: () ->
+    if @swank
+      input = @inputText.getModel().getText().trim()
+      # Push this command to the ring if applicable
+      if input != '' and @previousCommands[@previousCommands.length - 1] != input
+        @previousCommands.push input
+      @cycleIndex = @previousCommands.length
+      # Evaluate the command
+      promise = @swank.eval input, @pkg
+      # Until the command is done, grey out the input box
+      @prompt.addClass "atom-slime-repl-pending"
+      @inputText.css opacity: 0.3
+      promise.then =>
+        @prompt.removeClass "atom-slime-repl-pending"
+        @inputText.css opacity: 1.0
+      # Add an entry of the form PACKAGE> CMD, and clear the text box
+      @writePrompt(input)
+      @inputText.getModel().setText('')
+
+  cycleBack: () ->
+    # Cycle back through command history
+    @cycleIndex = @cycleIndex - 1 if @cycleIndex > 0
+    @showPreviousCommand(@cycleIndex)
+
+
+  cycleForward: () ->
+    # Cycle forward through command history
+    @cycleIndex = @cycleIndex + 1 if @cycleIndex < @previousCommands.length
+    @showPreviousCommand(@cycleIndex)
+
+
+  showPreviousCommand: (index) ->
+    if index >= @previousCommands.length
+      # Empty it
+      @inputText.getModel().setText('')
+    else if index >= 0 and index < @previousCommands.length
+      cmd = @previousCommands[index]
+      @inputText.getModel().setText(cmd)
+
 
   resizeStarted: =>
     $(document).on('mousemove', @resizeTreeView)
