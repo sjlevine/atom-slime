@@ -10,8 +10,8 @@ class REPLView extends View
   @content: ->
     @div class: 'panel atom-slime-repl', =>
       @div class: 'atom-slime-resize-handle'
-      #@div class: 'atom-slime-repl-output', =>
-      #  @pre class: "terminal", outlet: "output"
+      @div outlet:'outputContainer', class: 'atom-slime-repl-output', =>
+        @pre class: "terminal", outlet: "output"
       @subview 'debugger', new DebuggerView
       @div class: 'atom-slime-repl-input', =>
         @div class: 'atom-slime-repl-prompt', outlet: "prompt", 'CL-USER>'
@@ -48,6 +48,14 @@ class REPLView extends View
 
   show: ->
     @panel.show()
+
+  showDebugger: (show) ->
+    if show
+      @debugger.show()
+      @outputContainer.hide()
+    else
+      @debugger.hide()
+      @outputContainer.show()
 
   resizeTreeView: ({pageY, which}) =>
     return @resizeStopped() unless which is 1

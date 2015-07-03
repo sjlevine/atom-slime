@@ -5,14 +5,12 @@ module.exports =
 class DebuggerView extends ScrollView
   @content: ->
     @div outlet:"main", class:"inset-panel atom-slime-debugger padded", =>
-      @h1 =>
-        @text "arithmetic error DIVISION-BY-ZERO signalled"
-        @br()
-        @text "Operation was /, operands (0 0)."
-      @h2 class:"text-subtle", "   [Condition of type DIVISION-BY-ZERO]"
+      @h1 outlet:"errorTitle", =>
+        @text "arithmetic error DIVISION-BY-ZERO signalled: Operation was /, operands (0 0)."
+      @h2 outlet:"errorType", class:"text-subtle", "   [Condition of type DIVISION-BY-ZERO]"
       @h3 "Restarts:"
       @div class:"select-list", =>
-        @ol class:'list-group mark-active', =>
+        @ol outlet:"restarts", class:'list-group mark-active', =>
           @li class:"", =>
             @button class:"inline-block-tight btn", "Option 1"
             @text "Description of option 1"
@@ -26,7 +24,7 @@ class DebuggerView extends ScrollView
             @button class:"inline-block-tight btn", "Option 3"
             @text "Description of option 3"
 
-      @h3 "Stack Trace:"
+      # @h3 "Stack Trace:"
       # @ul class:"list-tree has-collapsable-children", =>
       #   @li class:'list-nested-item', =>
       #     @div class:'list-item', =>
@@ -36,8 +34,16 @@ class DebuggerView extends ScrollView
       #       @li class:'list-nested-item', =>
       #         @div class:'list-item', 'Hi there'
 
-  @setup: ->
-
+  @setup: (@info) ->
+    @errorTitle.innerHTML @info.title
+    @errorType.innerHTML @info.type
+    @restarts.empty()
+    for [restartCmd, restartDesc], i in @info.restarts
+      @restarts.append $$ ->
+        @li class:"", =>
+          @button class:"inline-block-tight btn", restartCmd
+          @text restartDesc
+          # Bind click handler!
 
 
 class MySelectListView extends SelectListView
