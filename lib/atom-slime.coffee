@@ -4,7 +4,6 @@ AtomSlimeView = require './atom-slime-view'
 paredit = require 'paredit.js'
 slime = require './slime-functions'
 AtomSlimeEditor = require './atom-slime-editor'
-Q = require('q')
 
 module.exports = AtomSlimeManager =
   views: null
