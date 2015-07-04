@@ -12,6 +12,8 @@ module.exports =
             for m in obj.children[1..]
               if m.type == "symbol"
                 return m.source.replace(':', '')
+    # If we didn't find anything, return default
+    return "CL-USER"
 
 
   # Given an AST and the cursor index,

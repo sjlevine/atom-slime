@@ -15,6 +15,8 @@ class AtomSlimeEditor
     @subs.add editor.onDidStopChanging => @stoppedEditingCallback()
     @subs.add editor.onDidChangeCursorPosition => @cursorMovedCallback()
     @subs.add editor.onDidDestroy => @editorDestroyedCallback()
+    # Pretend we just finished editing, so that way things get up to date
+    @stoppedEditingCallback()
 
   dispose: ->
     @subs.dispose()

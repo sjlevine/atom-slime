@@ -13,7 +13,6 @@ module.exports = AtomSlimeManager =
   swank: null
 
   activate: (state) ->
-    console.log("Slime activated")
     @views = new AtomSlimeView(state.viewsState)
 
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
@@ -37,7 +36,7 @@ module.exports = AtomSlimeManager =
       else
         editor.onDidChangeGrammar =>
           if editor.getGrammar().name == "Lisp"
-            ase = new AtomSlimeEditor(editor)
+            ase = new AtomSlimeEditor(editor, @views.statusView, this)
             @ases.add ase
 
   swankConnect: () ->
@@ -53,10 +52,6 @@ module.exports = AtomSlimeManager =
       return @swank.initialize().then =>
         @views.statusView.message("Slime connected")
         @views.repl.show()
-
-
-    #  .then ->
-    #    return @swank.autodoc("(+ 1 2)", "COMMON-LISP-USER", 2);})
 
 
   getAutoDoc: (sexp_string, cursor, pkg) ->
