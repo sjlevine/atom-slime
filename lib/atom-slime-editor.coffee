@@ -9,7 +9,7 @@ class AtomSlimeEditor
   pkg: null
   mouseMoveTimeout: null
 
-  constructor: (@editor, @statusView, @manager) ->
+  constructor: (@editor, @statusView, @swank) ->
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subs = new CompositeDisposable
     @subs.add editor.onDidStopChanging => @stoppedEditingCallback()
@@ -36,14 +36,14 @@ class AtomSlimeEditor
     mouseMoveTimeout = null
     # Show slime autodocumentation
     # Get the current sexp we're in
-    sexp_info = @getCurrentSexp()
-    if sexp_info
-      promise = @manager.getAutoDoc sexp_info.sexp, sexp_info.relativeCursor, @pkg
-      if promise
-        promise.then (response) => @statusView.displayAutoDoc response
-      else
-        @statusView.message ""
-
+    if @swank.connected
+      sexp_info = @getCurrentSexp()
+      if sexp_info
+        promise = @swank.autodoc sexp_info.sexp, sexp_info.relativeCursor, @pkg
+        if promise
+          promise.then (response) => @statusView.displayAutoDoc response
+        else
+          @statusView.message ""
 
   # Return a string of the current sexp the user is in. The "deepest" one.
   # If we're not in one, return null.

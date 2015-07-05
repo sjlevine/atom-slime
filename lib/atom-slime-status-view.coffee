@@ -4,8 +4,7 @@ module.exports =
   class StatusView extends View
     @content:->
       @div class:'inline-block', =>
-        @div outlet:'main', 'Slime'
-
+        @div outlet:'main', ''
 
     message: (msg) =>
       @main.html(msg)
@@ -35,13 +34,7 @@ module.exports =
       entries[0].classes.push "entity"
       entries[0].classes.push "name"
       entries[0].classes.push "function"
-
       result = '(' + (('<span class="' + entry.classes.join(' ') + '">' + entry.text + '</span>' for entry in entries).join ' ') + ')'
-
-      # console.log entries
-      # console.log result
-
-
       # Otherwise, treat it and parse it
       @main.html(result)
 

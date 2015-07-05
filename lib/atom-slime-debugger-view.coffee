@@ -24,15 +24,6 @@ class DebuggerView extends ScrollView
             @button class:"inline-block-tight btn", "Option 3"
             @text "Description of option 3"
 
-      # @h3 "Stack Trace:"
-      # @ul class:"list-tree has-collapsable-children", =>
-      #   @li class:'list-nested-item', =>
-      #     @div class:'list-item', =>
-      #       @text 'Function '
-      #       @span class:'badge icon icon-file-text', 'Go to file'
-      #     @ul class:'list-tree', =>
-      #       @li class:'list-nested-item', =>
-      #         @div class:'list-item', 'Hi there'
 
   setup: (@swank, @info) ->
     @errorTitle.html @info.title
@@ -53,5 +44,4 @@ class DebuggerView extends ScrollView
     restartindex = event.target.getAttribute('restartindex')
     level = event.target.getAttribute('level')
     thread = event.target.getAttribute('thread')
-    console.log "#{restartindex} #{level} #{thread}"
     @swank.debug_invoke_restart(level, restartindex, thread)

@@ -1,4 +1,4 @@
-
+# Contains various useful Slime-related functions
 module.exports =
 
   # Given an an abstract syntax tree,

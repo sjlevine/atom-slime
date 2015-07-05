@@ -4,9 +4,7 @@ DebuggerView = require './atom-slime-debugger-view'
 
 module.exports =
 class REPLView extends View
-  swank: null
   pkg: "CL-USER"
-
   # Keep track of command history, for use with the up/down arrows
   previousCommands: []
   cycleIndex: null
@@ -21,19 +19,19 @@ class REPLView extends View
         @div class: 'atom-slime-repl-prompt', outlet: "prompt", 'CL-USER>'
         @subview 'inputText', new TextEditorView(mini: true, placeholderText: 'input your command here')
 
-  initialize: ->
+  initialize: (@swank) ->
     atom.commands.add @inputText.element,
       'core:confirm': =>
         @inputCommandHandler()
-
       atom.commands.add @inputText.element, 'core:move-up': => @cycleBack()
       atom.commands.add @inputText.element, 'core:move-down': => @cycleForward()
-
     # Set up resizing
     @on 'mousedown', '.atom-slime-resize-handle', (e) => @resizeStarted(e)
+    # Setup subscriptions to relevant swank events
+    @setupSwankSubscriptions()
 
   inputCommandHandler: () ->
-    if @swank
+    if @swank.connected
       input = @inputText.getModel().getText().trim()
       # Push this command to the ring if applicable
       if input != '' and @previousCommands[@previousCommands.length - 1] != input
@@ -101,7 +99,7 @@ class REPLView extends View
     if height >= 100
       @height(height)
 
-  setSwank: (@swank) ->
+  setupSwankSubscriptions: () ->
     @swank.on 'new_package', (pkg) =>
       @setPackage(pkg)
     @swank.on 'debug_setup', (obj) =>
@@ -135,3 +133,6 @@ class REPLView extends View
 
   attach: ->
     @panel = atom.workspace.addBottomPanel(item: this, priority: 200, visible: false)
+
+  destroy: ->
+    @element.remove()
