@@ -1,4 +1,4 @@
-{CompositeDisposable} = require 'atom'
+{CompositeDisposable, Point, Range} = require 'atom'
 {$, TextEditorView, View} = require 'atom-space-pen-views'
 DebuggerView = require './atom-slime-debugger-view'
 
@@ -12,22 +12,73 @@ class REPLView extends View
   @content: ->
     @div class: 'panel atom-slime-repl', =>
       @div class: 'atom-slime-resize-handle'
-      @div outlet:'outputContainer', class: 'atom-slime-repl-output', =>
-        @pre class: "terminal run-command native-key-bindings", tabindex:"-1", outlet: "output"
+      #@div outlet:'outputContainer', class: 'atom-slime-repl-output', =>
+      #  @pre class: "terminal run-command native-key-bindings", tabindex:"-1", outlet: "output"
+      @subview 'replView', new TextEditorView()
       @subview 'debugger', new DebuggerView
-      @div class: 'atom-slime-repl-input', =>
-        @div class: 'atom-slime-repl-prompt', outlet: "prompt", 'CL-USER>'
-        @subview 'inputText', new TextEditorView(mini: true, placeholderText: 'input your command here')
+      #@div class: 'atom-slime-repl-input', =>
+      #  @div class: 'atom-slime-repl-prompt', outlet: "prompt", 'CL-USER>'
+      #  @subview 'inputText', new TextEditorView(mini: true, placeholderText: 'input your command here')
 
   initialize: (@swank) ->
-    atom.commands.add @inputText.element,
-      'core:confirm': =>
-        @inputCommandHandler()
-      atom.commands.add @inputText.element, 'core:move-up': => @cycleBack()
-      atom.commands.add @inputText.element, 'core:move-down': => @cycleForward()
+    #atom.commands.add @inputText.element,
+    #  'core:confirm': =>
+    #    @inputCommandHandler()
+    #  atom.commands.add @inputText.element, 'core:move-up': => @cycleBack()
+    #  atom.commands.add @inputText.element, 'core:move-down': => @cycleForward()
     # Set up resizing
-    @on 'mousedown', '.atom-slime-resize-handle', (e) => @resizeStarted(e)
+    #@on 'mousedown', '.atom-slime-resize-handle', (e) => @resizeStarted(e)
     # Setup subscriptions to relevant swank events
+
+    @prompt = "PIKE> "
+
+    # Hide the gutter(s)
+    @ed = @replView.getModel()
+    g.hide() for g in @ed.getGutters()
+    @ed.setText(@prompt)
+
+    # Set the grammer to Lisp?
+
+    # Set up some callbacks
+    @subs = new CompositeDisposable
+
+
+
+    @subs.add atom.commands.add @replView.element, 'core:backspace': (event) =>
+      # Check buffer position!
+      point = @ed.getCursorBufferPosition()
+      if point.column <= @prompt.length or point.row < @ed.getLastBufferRow()
+        event.stopImmediatePropagation()
+
+    @subs.add atom.commands.add @replView.element, 'core:delete': (event) =>
+      point = @ed.getCursorBufferPosition()
+      if point.column < @prompt.length or point.row < @ed.getLastBufferRow()
+        event.stopImmediatePropagation()
+
+    @subs.add atom.commands.add @replView.element, 'editor:newline': (event) =>
+      point = @ed.getCursorBufferPosition()
+      if point.row == @ed.getLastBufferRow()
+        @ed.moveToEndOfLine()
+        @ed.insertText("\n" + @prompt, undo:'skip')
+      event.stopImmediatePropagation()
+
+    @subs.add @ed.onWillInsertText (event) =>
+      console.log 'Insert: ' + event.text
+      point = @ed.getCursorBufferPosition()
+      if point.column < @prompt.length or point.row < @ed.getLastBufferRow()
+        event.cancel()
+
+    @subs.add atom.commands.add 'atom-workspace', 'slime:thingy': =>
+      point = @ed.getCursorBufferPosition()
+      pointAbove = new Point(point.row - 1, @ed.lineTextForBufferRow(point.row - 1).length)
+      @ed.setTextInBufferRange(new Range(pointAbove, pointAbove), "\nmonkus",undo:'skip')
+      @ed.scrollToBotom()
+
+
+
+
+
+
     @setupSwankSubscriptions()
 
   inputCommandHandler: () ->
@@ -132,7 +183,7 @@ class REPLView extends View
     return text.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   attach: ->
-    @panel = atom.workspace.addBottomPanel(item: this, priority: 200, visible: false)
+    @panel = atom.workspace.addBottomPanel(item: this, priority: 200, visible: true)
 
   destroy: ->
     @element.remove()
