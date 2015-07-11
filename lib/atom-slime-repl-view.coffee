@@ -17,8 +17,27 @@ class REPLView
     @createRepl()
 
 
+  # Make a new pane / REPL text editor, or find one
+  # that already exists
   createRepl: () ->
-    # Create a new pane
+    @editor = @replPane = null
+    editors = atom.workspace.getTextEditors()
+    for editor in editors
+      if editor.getPath() == '/tmp/repl.lisp-repl'
+        # We found the editor! Now search for the pane it's in.
+        allPanes = atom.workspace.getPanes()
+        for pane in allPanes
+          if editor in pane.getItems()
+            # Found the pane too!
+            @editor = editor
+            @replPane = pane
+            @editorElement = atom.views.getView(@editor)
+
+    if @editor and @replPane
+      @setupRepl()
+      return
+
+    # Create a new pane and editor if we didn't find one
     paneCurrent = atom.workspace.getActivePane()
     @replPane = paneCurrent.splitDown() #.splitRight
     # Open a new REPL there
@@ -27,6 +46,7 @@ class REPLView
       @editor = editor
       @editorElement = atom.views.getView(@editor)
       @setupRepl()
+
 
   # Set up the REPL GUI for use
   setupRepl: () ->
