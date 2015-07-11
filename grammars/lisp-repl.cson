@@ -1,0 +1,14 @@
+'comment': ''
+'fileTypes': [
+  'lisp-repl'
+]
+'name': 'Lisp REPL'
+'patterns': [
+  {
+    'match': '^([\\w\\-*+:]+>)'
+    'name': 'keyword.control.lisp'
+  }
+
+  {'include': 'source.lisp'}
+]
+'scopeName': 'source.lisp-repl'
