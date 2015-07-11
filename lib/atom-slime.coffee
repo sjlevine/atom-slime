@@ -4,6 +4,7 @@ AtomSlimeView = require './atom-slime-view'
 paredit = require 'paredit.js'
 slime = require './slime-functions'
 AtomSlimeEditor = require './atom-slime-editor'
+SlimeAutocompleteProvider = require './slime-autocomplete'
 
 module.exports = AtomSlimeManager =
   views: null
@@ -36,13 +37,15 @@ module.exports = AtomSlimeManager =
             ase = new AtomSlimeEditor(editor, @views.statusView, @swank)
             @ases.add ase
 
+    SlimeAutocompleteProvider.setup @swank, @views.repl
+
   # Sets up a swank client but does not connect
   setupSwank: () ->
     @swank = new Swank.Client("localhost", 4005);
     @swank.on 'disconnect', =>
       console.log "Disconnected!"
-    @swank.on 'presentation_print', (msg) =>
-      @views.repl.writeSuccess msg.replace(/\\\"/g, '"')
+    # @swank.on 'presentation_print', (msg) =>
+    #   @views.repl.writeSuccess msg.replace(/\\\"/g, '"')
 
   # Connect the swank client
   swankConnect: () ->
@@ -62,3 +65,5 @@ module.exports = AtomSlimeManager =
 
   consumeStatusBar: (statusBar) ->
     @views.setStatusBar(statusBar)
+
+  provideSlimeAutocomplete: -> SlimeAutocompleteProvider
