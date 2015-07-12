@@ -6,8 +6,13 @@
 'patterns': [
   {
     'match': '^([\\w\\-*+:]+>)'
-    'name': 'keyword.control.lisp'
+    'name': 'repl-prompt.keyword.control.lisp'
   }
+  {
+    'match': '#<[^\\(\\)]*>'
+    'name': 'constant.language.lisp'
+  }
+
 
   {'include': 'source.lisp'}
 ]

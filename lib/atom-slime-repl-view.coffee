@@ -10,6 +10,7 @@ class REPLView
   inputFromUser: true
 
   constructor: (@swank) ->
+    @prompt = @pkg + "> "
 
   attach: () ->
     @subs = new CompositeDisposable
@@ -50,7 +51,7 @@ class REPLView
 
   # Set up the REPL GUI for use
   setupRepl: () ->
-    @prompt = @pkg + "> "
+    @insertPrompt()
     @editor.setText @prompt
     @editor.moveToEndOfLine()
     @subs.add atom.commands.add @editorElement, 'core:backspace': (event) =>
@@ -75,6 +76,7 @@ class REPLView
 
     @subs.add atom.commands.add @editorElement, 'editor:newline': (event) => @handleEnter(event)
     @subs.add atom.commands.add @editorElement, 'editor:newline-below': (event) => @handleEnter(event)
+
 
 
     @subs.add @editor.onWillInsertText (event) =>
@@ -107,16 +109,25 @@ class REPLView
 
   handleEnter: (event) ->
     point = @editor.getCursorBufferPosition()
-    if point.row == @editor.getLastBufferRow() and !@preventUserInput
+    if point.row == @editor.getLastBufferRow() and !@preventUserInput and @swank.connected
       input = @getUserInput()
       @preventUserInput = true
       @appendText("\n")
       promise = @swank.eval input, @pkg
       promise.then =>
-        @appendText "\n" + @prompt
+        @insertPrompt()
         @preventUserInput = false
     # Stop the enter
     event.stopImmediatePropagation()
+
+  insertPrompt: () ->
+    @appendText "\n" + @prompt
+    # Now, mark it
+    row = @editor.getLastBufferRow()
+    marker = @editor.markBufferPosition(new Point(row,0))
+    console.log marker
+    @editor.decorateMarker marker, {type:'line',class:'repl-line'}
+
 
   setupSwankSubscriptions: () ->
     @swank.on 'new_package', (pkg) => @setPackage(pkg)

@@ -5,12 +5,29 @@ paredit = require 'paredit.js'
 slime = require './slime-functions'
 AtomSlimeEditor = require './atom-slime-editor'
 SlimeAutocompleteProvider = require './slime-autocomplete'
+SwankStarter = require './swank-starter'
 
-module.exports = AtomSlimeManager =
+module.exports = AtomSlime =
   views: null
   subs: null
   asts: {}
   pkgs: {}
+  process: null
+  maxConnectionAttempts: 5
+
+  # Provide configuration options
+  config:
+    slimePath:
+      title: 'Slime Path'
+      description: 'Path to where SLIME resides on your computer.'
+      type: 'string'
+      default: '/home/steve/Desktop/slime'
+
+    lispName:
+      title: 'Lisp Process'
+      description: 'Name of Lisp to run'
+      type: 'string'
+      default: 'sbcl'
 
   activate: (state) ->
     # Setup a swank client instance
@@ -21,6 +38,7 @@ module.exports = AtomSlimeManager =
     @ases = new CompositeDisposable
 
     # Setup connections
+    @subs.add atom.commands.add 'atom-workspace', 'slime:start': => @swankStart()
     @subs.add atom.commands.add 'atom-workspace', 'slime:connect': => @swankConnect()
     @subs.add atom.commands.add 'atom-workspace', 'slime:hide': => @views.repl.hide()
     @subs.add atom.commands.add 'atom-workspace', 'slime:show': => @views.repl.show()
@@ -44,21 +62,38 @@ module.exports = AtomSlimeManager =
     @swank = new Swank.Client("localhost", 4005);
     @swank.on 'disconnect', =>
       console.log "Disconnected!"
-    # @swank.on 'presentation_print', (msg) =>
-    #   @views.repl.writeSuccess msg.replace(/\\\"/g, '"')
 
-  # Connect the swank client
+  # Start a swank server and then connec to it
+  swankStart: () ->
+    @process = new SwankStarter
+    @process.start()
+
+  # Connect the to a running swank client
   swankConnect: () ->
-    @swank.connect().then =>
-      console.log "Slime Connected!!"
-      return @swank.initialize().then =>
-        @views.statusView.message("Slime connected")
-        @views.repl.show()
+    @tryToConnect 0
+
+  tryToConnect: (i) ->
+    if i > @maxConnectionAttempts
+      atom.notifications.addWarning("Couldn't connect to Lisp", detail:"Did you set the Slime location in settings?")
+      return false
+    promise = @swank.connect()
+    promise.then => @swankConnected()
+    promise.catch =>
+      setTimeout ( => @tryToConnect(i + 1)), 200
+
+
+  swankConnected: () ->
+    console.log "Slime Connected!!"
+    return @swank.initialize().then =>
+      @views.statusView.message("Slime connected")
+      @views.repl.show()
+
 
   deactivate: ->
     @subs.dispose()
     @ases.dispose()
     @views.destroy()
+    @process.destroy()
 
   serialize: ->
     viewsState: @views.serialize()
