@@ -73,7 +73,7 @@ module.exports = AtomSlime =
 
   tryToConnect: (i) ->
     if i > @maxConnectionAttempts
-      atom.notifications.addWarning("Couldn't connect to Lisp", detail:"Did you set the Slime location in settings?")
+      atom.notifications.addWarning("Couldn't connect to Lisp!", detail:"Did you start a Lisp swank server?")
       return false
     promise = @swank.connect()
     promise.then (=> @swankConnected()), ( => setTimeout ( => @tryToConnect(i + 1)), 200)
