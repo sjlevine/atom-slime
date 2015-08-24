@@ -1,12 +1,10 @@
 REPLView = require './atom-slime-repl-view'
 StatusView = require './atom-slime-status-view'
+SlimeAutocompleteProvider = require './slime-autocomplete'
 
 module.exports =
 class AtomSlimeView
   constructor: (serializedState, @swank) ->
-    # Start a REPL
-    @repl = new REPLView(@swank)
-    @repl.attach()
     # Start a status view
     @statusView = new StatusView()
 
@@ -15,8 +13,14 @@ class AtomSlimeView
 
   # Tear down any state and detach
   destroy: ->
-    @statusView.destroy()
-    @repl.destroy()
+    @statusView?.destroy()
+    @repl?.destroy()
+
+  showRepl: ->
+      # Start a REPL
+      @repl = new REPLView(@swank)
+      @repl.attach()
+      SlimeAutocompleteProvider.setup @swank, @repl
 
   getElement: ->
     @element

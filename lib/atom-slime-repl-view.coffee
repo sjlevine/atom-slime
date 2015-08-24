@@ -16,6 +16,7 @@ class REPLView
     @subs = new CompositeDisposable
     @setupSwankSubscriptions()
     @createRepl()
+    @setupDebugger()
 
 
   # Make a new pane / REPL text editor, or find one
@@ -86,6 +87,9 @@ class REPLView
       if @inputFromUser and (@preventUserInput or point.column < @prompt.length or point.row < @editor.getLastBufferRow())
         event.cancel()
 
+    @subs.add @editor.onDidDestroy =>
+      @closeRepl()
+
     # Hide the gutter(s)
     # g.hide() for g in @editor.getGutters()
 
@@ -125,7 +129,6 @@ class REPLView
     # Now, mark it
     row = @editor.getLastBufferRow()
     marker = @editor.markBufferPosition(new Point(row,0))
-    console.log marker
     @editor.decorateMarker marker, {type:'line',class:'repl-line'}
 
 
@@ -136,14 +139,43 @@ class REPLView
       @appendText msg.replace(/\\\"/g, '"')
 
     # @swank.on 'debug_setup', (obj) => @debugger.setup(@swank, obj)
-    # @swank.on 'debug_activate', (obj) =>
-    #   # TODO - keep track of differnet levels
-    #   @showDebugger true
-    # @swank.on 'debug_return', (obj) =>
-    #   # TODO - keep track of differnet levels
-    #   @showDebugger false
+    @swank.on 'debug_setup', (obj) => @createDebugTab(obj)
+    @swank.on 'debug_activate', (obj) =>
+     # TODO - keep track of differnet levels
+     @showDebugTab()
+    @swank.on 'debug_return', (obj) =>
+      # TODO - keep track of different levels
+      @closeDebugTab()
+
+
+  setupDebugger: () ->
+    process.nextTick =>
+    @subs.add atom.workspace.addOpener (filePath) =>
+        if filePath == 'slime://debug'
+          return @dbgv
+    @subs.add @replPane.onWillDestroyItem (e) =>
+      if e.item == @dbgv
+        @swank.debug_escape_all()
+
+  createDebugTab: (obj) ->
+    @dbgv = new DebuggerView
+    @dbgv.setup(@swank, obj)
+
+  showDebugTab: () ->
+    @replPane.activate()
+    atom.workspace.open('slime://debug').then (editor) =>
+      # Debugger now opened
+
+  closeDebugTab: () ->
+    @replPane.destroyItem(@dbgv)
+
 
   # Set the package and prompt
   setPackage: (pkg) ->
     @pkg = pkg
     @prompt = "#{@pkg}> "
+
+
+  closeRepl: ->
+    if @swank.connected
+      @swank.quit()

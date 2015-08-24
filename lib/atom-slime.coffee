@@ -21,7 +21,7 @@ module.exports = AtomSlime =
       title: 'Slime Path'
       description: 'Path to where SLIME resides on your computer.'
       type: 'string'
-      default: '/home/steve/Desktop/slime'
+      default: '/home/username/Desktop/slime'
 
     lispName:
       title: 'Lisp Process'
@@ -55,7 +55,6 @@ module.exports = AtomSlime =
             ase = new AtomSlimeEditor(editor, @views.statusView, @swank)
             @ases.add ase
 
-    SlimeAutocompleteProvider.setup @swank, @views.repl
 
   # Sets up a swank client but does not connect
   setupSwank: () ->
@@ -63,7 +62,7 @@ module.exports = AtomSlime =
     @swank.on 'disconnect', =>
       console.log "Disconnected!"
 
-  # Start a swank server and then connec to it
+  # Start a swank server and then connect to it
   swankStart: () ->
     @process = new SwankStarter
     @process.start()
@@ -77,16 +76,14 @@ module.exports = AtomSlime =
       atom.notifications.addWarning("Couldn't connect to Lisp", detail:"Did you set the Slime location in settings?")
       return false
     promise = @swank.connect()
-    promise.then => @swankConnected()
-    promise.catch =>
-      setTimeout ( => @tryToConnect(i + 1)), 200
-
+    promise.then (=> @swankConnected()), ( => setTimeout ( => @tryToConnect(i + 1)), 200)
 
   swankConnected: () ->
     console.log "Slime Connected!!"
     return @swank.initialize().then =>
+      atom.notifications.addSuccess('Connected to Lisp!', detail:'You can now code away!')
       @views.statusView.message("Slime connected")
-      @views.repl.show()
+      @views.showRepl()
 
 
   deactivate: ->
