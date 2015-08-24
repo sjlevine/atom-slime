@@ -4,10 +4,10 @@
 module.exports =
 class DebuggerView extends ScrollView
   @content: ->
-    @div outlet:"main", class:"inset-panel atom-slime-debugger padded", =>
+    @div outlet:"main", class:"atom-slime-debugger padded", =>
       @h1 outlet:"errorTitle", =>
-        @text "arithmetic error DIVISION-BY-ZERO signalled: Operation was /, operands (0 0)."
-      @h2 outlet:"errorType", class:"text-subtle", "   [Condition of type DIVISION-BY-ZERO]"
+        @text "Error description"
+      @h2 outlet:"errorType", class:"text-subtle", "   Error sub-text"
       @h3 "Restarts:"
       @div class:"select-list", =>
         @ol outlet:"restarts", class:'list-group mark-active', =>
@@ -45,3 +45,9 @@ class DebuggerView extends ScrollView
     level = event.target.getAttribute('level')
     thread = event.target.getAttribute('thread')
     @swank.debug_invoke_restart(level, restartindex, thread)
+
+
+  getTitle: -> "Debugger"
+  getURI: -> "slime://debug" # TODO -- fix
+  isEqual: (other) ->
+    other instanceof DebuggerView

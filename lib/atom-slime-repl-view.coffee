@@ -1,53 +1,169 @@
-{CompositeDisposable} = require 'atom'
+{CompositeDisposable, Point, Range} = require 'atom'
 {$, TextEditorView, View} = require 'atom-space-pen-views'
 DebuggerView = require './atom-slime-debugger-view'
 
 module.exports =
-class REPLView extends View
+class REPLView
   pkg: "CL-USER"
+  prompt: "> "
+  preventUserInput: false
+  inputFromUser: true
   # Keep track of command history, for use with the up/down arrows
   previousCommands: []
   cycleIndex: null
 
-  @content: ->
-    @div class: 'panel atom-slime-repl', =>
-      @div class: 'atom-slime-resize-handle'
-      @div outlet:'outputContainer', class: 'atom-slime-repl-output', =>
-        @pre class: "terminal run-command native-key-bindings", tabindex:"-1", outlet: "output"
-      @subview 'debugger', new DebuggerView
-      @div class: 'atom-slime-repl-input', =>
-        @div class: 'atom-slime-repl-prompt', outlet: "prompt", 'CL-USER>'
-        @subview 'inputText', new TextEditorView(mini: true, placeholderText: 'input your command here')
+  constructor: (@swank) ->
+    @prompt = @pkg + "> "
 
-  initialize: (@swank) ->
-    atom.commands.add @inputText.element,
-      'core:confirm': =>
-        @inputCommandHandler()
-      atom.commands.add @inputText.element, 'core:move-up': => @cycleBack()
-      atom.commands.add @inputText.element, 'core:move-down': => @cycleForward()
-    # Set up resizing
-    @on 'mousedown', '.atom-slime-resize-handle', (e) => @resizeStarted(e)
-    # Setup subscriptions to relevant swank events
+  attach: () ->
+    @subs = new CompositeDisposable
     @setupSwankSubscriptions()
+    @createRepl()
+    @setupDebugger()
 
-  inputCommandHandler: () ->
-    if @swank.connected
-      input = @inputText.getModel().getText().trim()
+
+  # Make a new pane / REPL text editor, or find one
+  # that already exists
+  createRepl: () ->
+    @editor = @replPane = null
+    editors = atom.workspace.getTextEditors()
+    for editor in editors
+      if editor.getPath() == '/tmp/repl.lisp-repl'
+        # We found the editor! Now search for the pane it's in.
+        allPanes = atom.workspace.getPanes()
+        for pane in allPanes
+          if editor in pane.getItems()
+            # Found the pane too!
+            @editor = editor
+            @replPane = pane
+            @editorElement = atom.views.getView(@editor)
+
+    if @editor and @replPane
+      @setupRepl()
+      return
+
+    # Create a new pane and editor if we didn't find one
+    paneCurrent = atom.workspace.getActivePane()
+    @replPane = paneCurrent.splitDown() #.splitRight
+    # Open a new REPL there
+    @replPane.activate()
+    atom.workspace.open('/tmp/repl.lisp-repl').then (editor) =>
+      @editor = editor
+      @editorElement = atom.views.getView(@editor)
+      @setupRepl()
+
+
+  # Set up the REPL GUI for use
+  setupRepl: () ->
+    @insertPrompt()
+    @editor.setText @prompt
+    @editor.moveToEndOfLine()
+    @subs.add atom.commands.add @editorElement, 'core:backspace': (event) =>
+      # Check buffer position!
+      point = @editor.getCursorBufferPosition()
+      if point.column <= @prompt.length or point.row < @editor.getLastBufferRow()
+        event.stopImmediatePropagation()
+
+    @subs.add atom.commands.add @editorElement, 'core:delete': (event) =>
+      point = @editor.getCursorBufferPosition()
+      if point.column < @prompt.length or point.row < @editor.getLastBufferRow()
+        event.stopImmediatePropagation()
+
+    @subs.add atom.commands.add @editorElement, 'core:cut': (event) =>
+      # TODO - prevent cutting here. We can make this better.
+      event.stopImmediatePropagation()
+
+    # Prevent undo / redo
+    @subs.add atom.commands.add @editorElement, 'core:undo': (event) => event.stopImmediatePropagation()
+    @subs.add atom.commands.add @editorElement, 'core:redo': (event) => event.stopImmediatePropagation()
+
+
+    @subs.add atom.commands.add @editorElement, 'editor:newline': (event) => @handleEnter(event)
+    @subs.add atom.commands.add @editorElement, 'editor:newline-below': (event) => @handleEnter(event)
+
+    @subs.add @editor.onWillInsertText (event) =>
+      #console.log 'Insert: ' + event.text
+      # console.log "Insert: #{event.text}"
+      point = @editor.getCursorBufferPosition()
+      if @inputFromUser and (@preventUserInput or point.column < @prompt.length or point.row < @editor.getLastBufferRow())
+        event.cancel()
+
+    # Set up up/down arrow previous command cycling
+    @subs.add atom.commands.add @editorElement, 'core:move-up': (event) =>
+      @cycleBack()
+      event.stopImmediatePropagation()
+    @subs.add atom.commands.add @editorElement, 'core:move-down': (event) =>
+      @cycleForward()
+      event.stopImmediatePropagation()
+
+
+    @subs.add @editor.onDidDestroy =>
+      @closeRepl()
+
+    # Hide the gutter(s)
+    # g.hide() for g in @editor.getGutters()
+
+    # @subs.add atom.commands.add 'atom-workspace', 'slime:thingy': =>
+    #   point = @ed.getCursorBufferPosition()
+    #   pointAbove = new Point(point.row - 1, @ed.lineTextForBufferRow(point.row - 1).length)
+    #   @ed.setTextInBufferRange(new Range(pointAbove, pointAbove), "\nmonkus",undo:'skip')
+    #   @ed.scrollToBotom()
+
+  # Adds non-user-inputted text to the REPL
+  appendText: (text) ->
+    @inputFromUser = false
+    @editor.insertText(text)
+    @inputFromUser = true
+
+  # Retrieve the string of the user's input
+  getUserInput: (text) ->
+    lastLine = @editor.lineTextForBufferRow(@editor.getLastBufferRow())
+    return lastLine[@prompt.length..]
+
+
+  handleEnter: (event) ->
+    point = @editor.getCursorBufferPosition()
+    if point.row == @editor.getLastBufferRow() and !@preventUserInput and @swank.connected
+      input = @getUserInput()
       # Push this command to the ring if applicable
       if input != '' and @previousCommands[@previousCommands.length - 1] != input
         @previousCommands.push input
       @cycleIndex = @previousCommands.length
-      # Evaluate the command
+
+      @preventUserInput = true
+      @editor.moveToEndOfLine()
+      @appendText("\n")
       promise = @swank.eval input, @pkg
-      # Until the command is done, grey out the input box
-      @prompt.addClass "atom-slime-repl-pending"
-      @inputText.css opacity: 0.3
       promise.then =>
-        @prompt.removeClass "atom-slime-repl-pending"
-        @inputText.css opacity: 1.0
-      # Add an entry of the form PACKAGE> CMD, and clear the text box
-      @writePrompt(input)
-      @inputText.getModel().setText('')
+        @insertPrompt()
+        @preventUserInput = false
+    # Stop the enter
+    event.stopImmediatePropagation()
+
+
+  insertPrompt: () ->
+    @appendText "\n" + @prompt
+    # Now, mark it
+    row = @editor.getLastBufferRow()
+    marker = @editor.markBufferPosition(new Point(row,0))
+    @editor.decorateMarker marker, {type:'line',class:'repl-line'}
+
+
+  setupSwankSubscriptions: () ->
+    @swank.on 'new_package', (pkg) => @setPackage(pkg)
+
+    @swank.on 'presentation_print', (msg) =>
+      @appendText msg.replace(/\\\"/g, '"')
+
+    # @swank.on 'debug_setup', (obj) => @debugger.setup(@swank, obj)
+    @swank.on 'debug_setup', (obj) => @createDebugTab(obj)
+    @swank.on 'debug_activate', (obj) =>
+     # TODO - keep track of differnet levels
+     @showDebugTab()
+    @swank.on 'debug_return', (obj) =>
+      # TODO - keep track of different levels
+      @closeDebugTab()
+
 
   cycleBack: () ->
     # Cycle back through command history
@@ -64,75 +180,54 @@ class REPLView extends View
   showPreviousCommand: (index) ->
     if index >= @previousCommands.length
       # Empty it
-      @inputText.getModel().setText('')
+      @setPromptCommand ''
     else if index >= 0 and index < @previousCommands.length
       cmd = @previousCommands[index]
-      @inputText.getModel().setText(cmd)
+      @setPromptCommand cmd
 
 
-  resizeStarted: =>
-    $(document).on('mousemove', @resizeTreeView)
-    $(document).on('mouseup', @resizeStopped)
+  setPromptCommand: (cmd) ->
+    # Sets the command at the prompt
+    lastrow = @editor.getLastBufferRow()
+    lasttext = @editor.lineTextForBufferRow(lastrow)
+    range = new Range([lastrow, 0], [lastrow, lasttext.length])
+    newtext = "#{@prompt}#{cmd}"
+    @editor.setTextInBufferRange(range, newtext, undo:'skip')
 
-  resizeStopped: =>
-    $(document).off('mousemove', @resizeTreeView)
-    $(document).off('mouseup', @resizeStopped)
 
-  hide: ->
-    @panel.hide()
+  setupDebugger: () ->
+    process.nextTick =>
+    @subs.add atom.workspace.addOpener (filePath) =>
+        if filePath == 'slime://debug'
+          return @dbgv
+    @subs.add @replPane.onWillDestroyItem (e) =>
+      if e.item == @dbgv
+        @swank.debug_escape_all()
 
-  show: ->
-    @panel.show()
 
-  showDebugger: (show) ->
-    if show
-      @debugger.show()
-      @outputContainer.hide()
-    else
-      @debugger.hide()
-      @outputContainer.show()
+  createDebugTab: (obj) ->
+    @dbgv = new DebuggerView
+    @dbgv.setup(@swank, obj)
 
-  resizeTreeView: ({pageY, which}) =>
-    return @resizeStopped() unless which is 1
-    # TODO - jumps a little at first
-    height = $(document.body).height() - pageY
-    if height >= 100
-      @height(height)
+  showDebugTab: () ->
+    @replPane.activate()
+    atom.workspace.open('slime://debug').then (d) =>
+      # TODO - doesn't work
+      #elt = atom.views.getView(d)
+      #atom.commands.add elt, 'q': (event) => @closeDebugTab()
 
-  setupSwankSubscriptions: () ->
-    @swank.on 'new_package', (pkg) =>
-      @setPackage(pkg)
-    @swank.on 'debug_setup', (obj) =>
-      @debugger.setup(@swank, obj)
-    @swank.on 'debug_activate', (obj) =>
-      # TODO - keep track of differnet levels
-      @showDebugger true
-    @swank.on 'debug_return', (obj) =>
-      # TODO - keep track of differnet levels
-      @showDebugger false
+  closeDebugTab: () ->
+    @replPane.destroyItem(@dbgv)
 
+
+  # Set the package and prompt
   setPackage: (pkg) ->
     @pkg = pkg
-    @prompt.html pkg + ">"
+    @prompt = "#{@pkg}> "
 
 
-  scrollToBottom: ->
-    @output.scrollTop 10000000
-
-
-  writePrompt: (text) ->
-    @output.append "<span class=\"repl-prompt\">#{@pkg}&gt;</span> #{text}<br/>"
-    @scrollToBottom()
-
-  writeSuccess: (text) ->
-    @output.append "<span class=\"repl-success\">#{@sanitizeText text}</span>"
-    @scrollToBottom()
-
-  sanitizeText: (text) ->
-    return text.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-
-  attach: ->
-    @panel = atom.workspace.addBottomPanel(item: this, priority: 200, visible: false)
-
-  destroy: ->
-    @element.remove()
+  closeRepl: ->
+    if @swank.connected
+      @closeDebugTab()
+      @subs.dispose()
+      @swank.quit()

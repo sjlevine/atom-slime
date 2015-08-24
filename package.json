@@ -10,6 +10,7 @@
     "repl"
   ],
   "repository": "https://github.com/sjlevine/atom-slime",
+  "bugs": "https://github.com/sjlevine/atom-slime/issues",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
@@ -17,12 +18,19 @@
   "dependencies": {
     "paredit.js": "^0.2.9",
     "atom-space-pen-views": "^2.0.5",
-    "swank-client-js": "^0.4.0"
+    "swank-client-js": "^0.4.3"
   },
   "consumedServices": {
     "status-bar": {
       "versions": {
         "^1.0.0": "consumeStatusBar"
+      }
+    }
+  },
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "provideSlimeAutocomplete"
       }
     }
   }

@@ -5,163 +5,16 @@
 @import "ui-variables";
 @import "syntax-variables";
 
-.atom-slime-repl {
-  position: relative;
-  height: 30vh;
-
-  // A resize handle so you can make the REPL bigger or smaller
-  .atom-slime-resize-handle {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 10px;
-    cursor: row-resize;
-    z-index: 3;
-  }
-
+atom-text-editor::shadow {
   .repl-prompt {
-    color: @text-color-info;
-  }
-  // .repl-prompt:hover {
-  //   color: lighten(@text-color-info, 15%);
-  // }
-
-  .repl-success {
-    color: @text-color-success;
-  }
-  // .repl-success:hover {
-  //   color: lighten(@text-color-success, 15%);
-  // }
-
-
-
-  &.panel {
-    margin-bottom: 0px;
-  }
-  .atom-slime-repl-input {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    padding: @component-padding 0;
-    min-height: @component-line-height;
-
-  }
-  atom-text-editor[mini] {
-    flex: 1;
-    margin-right: @component-padding;
-    margin-left: @component-padding;
-  }
-  .atom-slime-repl-output {
-    height: ~"calc(100% - 50px)";
-    white-space: pre;
-    word-wrap: break-word;
-    font-family: monospace;
+    font-weight: bold;
   }
 
-
-  .atom-slime-repl-prompt {
-    color: @text-color-info;
-    font-size: 13px; //@font-size;
-    font-family: monospace;
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: @component-padding;
-  }
-
-  .atom-slime-repl-pending {
-    color: @text-color-subtle;
-  }
-
-  .panel-heading {
-    display: none;
-  }
-  .btn-group {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-
-    > * {
-      margin-left: @component-padding;
-    }
-
-    .btn:first-of-type:not(:last-of-type) {
-      border-radius: @component-border-radius 0 0 @component-border-radius;
-    }
-
-    .btn:last-of-type:not(:first-of-type) {
-      border-radius: 0 @component-border-radius @component-border-radius 0;
-    }
-
-    .hide + .btn:last-of-type {
-      border-radius: @component-border-radius
-    }
-  }
-  .terminal {
-    height: 100%;
-    overflow-y: scroll;
-    bottom: @component-padding;
-    border-radius: 0;
-    color: @syntax-text-color;
-    background: @syntax-background-color;
-    border: 1px solid @tool-panel-border-color;
-
-    .file-info {
-      width: 140px;
-      display: inline-block;
-      float: left;
-    }
-    .stat-program {
-      color: #26c26a;
-    }
-    .stat-link {
-      color: hsl(285, 0.7, 0.7);
-    }
-    .clear {
-      clear: both;
-    }
-  }
-  .status-ignored {
-    opacity: 0.5;
-  }
-  .status-running {
-    color: hsl(180, 1, 0.5);
-  }
-  .status-info {
-    color: hsl(220, 1, 0.5);
-  }
-  .status-success {
-    color: hsl(100, 1, 0.5);
-  }
-  .status-error {
-    color: hsl(0, 1, 0.5);
-  }
-  .icon-terminal, .icon-plus {
-      cursor: pointer;
+  .repl-line {
+    background-color: @background-color-highlight;
   }
 }
 
 .atom-slime-debugger {
-  // By default: hidden
-  display: none;
-
-  padding: @component-padding;
-  height: ~"calc(100% - 50px)";
   overflow: auto;
-
-  .select-list ol.list-group {
-    border: 1px solid @inset-panel-border-color;
-    background-color: @pane-item-background-color;
-  }
-
-  ol.list-group li {
-    padding: 0.75em 1em;
-    line-height: 2em;
-    border-bottom: 1px solid @inset-panel-border-color;
-  }
-
-  ol.list-group li:last-of-type {
-    border-bottom: none;
-  }
 }
