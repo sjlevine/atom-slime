@@ -8,6 +8,9 @@ class REPLView
   prompt: "> "
   preventUserInput: false
   inputFromUser: true
+  # Keep track of command history, for use with the up/down arrows
+  previousCommands: []
+  cycleIndex: null
 
   constructor: (@swank) ->
     @prompt = @pkg + "> "
@@ -78,14 +81,21 @@ class REPLView
     @subs.add atom.commands.add @editorElement, 'editor:newline': (event) => @handleEnter(event)
     @subs.add atom.commands.add @editorElement, 'editor:newline-below': (event) => @handleEnter(event)
 
-
-
     @subs.add @editor.onWillInsertText (event) =>
       #console.log 'Insert: ' + event.text
       # console.log "Insert: #{event.text}"
       point = @editor.getCursorBufferPosition()
       if @inputFromUser and (@preventUserInput or point.column < @prompt.length or point.row < @editor.getLastBufferRow())
         event.cancel()
+
+    # Set up up/down arrow previous command cycling
+    @subs.add atom.commands.add @editorElement, 'core:move-up': (event) =>
+      @cycleBack()
+      event.stopImmediatePropagation()
+    @subs.add atom.commands.add @editorElement, 'core:move-down': (event) =>
+      @cycleForward()
+      event.stopImmediatePropagation()
+
 
     @subs.add @editor.onDidDestroy =>
       @closeRepl()
@@ -115,7 +125,13 @@ class REPLView
     point = @editor.getCursorBufferPosition()
     if point.row == @editor.getLastBufferRow() and !@preventUserInput and @swank.connected
       input = @getUserInput()
+      # Push this command to the ring if applicable
+      if input != '' and @previousCommands[@previousCommands.length - 1] != input
+        @previousCommands.push input
+      @cycleIndex = @previousCommands.length
+
       @preventUserInput = true
+      @editor.moveToEndOfLine()
       @appendText("\n")
       promise = @swank.eval input, @pkg
       promise.then =>
@@ -123,6 +139,7 @@ class REPLView
         @preventUserInput = false
     # Stop the enter
     event.stopImmediatePropagation()
+
 
   insertPrompt: () ->
     @appendText "\n" + @prompt
@@ -148,6 +165,36 @@ class REPLView
       @closeDebugTab()
 
 
+  cycleBack: () ->
+    # Cycle back through command history
+    @cycleIndex = @cycleIndex - 1 if @cycleIndex > 0
+    @showPreviousCommand(@cycleIndex)
+
+
+  cycleForward: () ->
+    # Cycle forward through command history
+    @cycleIndex = @cycleIndex + 1 if @cycleIndex < @previousCommands.length
+    @showPreviousCommand(@cycleIndex)
+
+
+  showPreviousCommand: (index) ->
+    if index >= @previousCommands.length
+      # Empty it
+      @setPromptCommand ''
+    else if index >= 0 and index < @previousCommands.length
+      cmd = @previousCommands[index]
+      @setPromptCommand cmd
+
+
+  setPromptCommand: (cmd) ->
+    # Sets the command at the prompt
+    lastrow = @editor.getLastBufferRow()
+    lasttext = @editor.lineTextForBufferRow(lastrow)
+    range = new Range([lastrow, 0], [lastrow, lasttext.length])
+    newtext = "#{@prompt}#{cmd}"
+    @editor.setTextInBufferRange(range, newtext, undo:'skip')
+
+
   setupDebugger: () ->
     process.nextTick =>
     @subs.add atom.workspace.addOpener (filePath) =>
@@ -157,14 +204,17 @@ class REPLView
       if e.item == @dbgv
         @swank.debug_escape_all()
 
+
   createDebugTab: (obj) ->
     @dbgv = new DebuggerView
     @dbgv.setup(@swank, obj)
 
   showDebugTab: () ->
     @replPane.activate()
-    atom.workspace.open('slime://debug').then (editor) =>
-      # Debugger now opened
+    atom.workspace.open('slime://debug').then (d) =>
+      # TODO - doesn't work
+      #elt = atom.views.getView(d)
+      #atom.commands.add elt, 'q': (event) => @closeDebugTab()
 
   closeDebugTab: () ->
     @replPane.destroyItem(@dbgv)
