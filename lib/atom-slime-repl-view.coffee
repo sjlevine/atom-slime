@@ -178,4 +178,6 @@ class REPLView
 
   closeRepl: ->
     if @swank.connected
+      @closeDebugTab()
+      @subs.dispose()
       @swank.quit()
