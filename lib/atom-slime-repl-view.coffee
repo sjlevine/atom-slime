@@ -150,12 +150,14 @@ class REPLView
 
 
   setupSwankSubscriptions: () ->
+    # On changing package
     @swank.on 'new_package', (pkg) => @setPackage(pkg)
 
+    # On printing text from REPL response
     @swank.on 'presentation_print', (msg) =>
       @appendText msg.replace(/\\\"/g, '"')
 
-    # @swank.on 'debug_setup', (obj) => @debugger.setup(@swank, obj)
+    # Debug functions
     @swank.on 'debug_setup', (obj) => @createDebugTab(obj)
     @swank.on 'debug_activate', (obj) =>
      # TODO - keep track of differnet levels
