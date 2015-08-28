@@ -12,6 +12,7 @@ Future features:
 - "Go to method definition" etc.
 - Autocomplete suggestions from swank
 - Interactive object inspection
+- Stack trace in debugger
 - "Compile this function"
 
 
