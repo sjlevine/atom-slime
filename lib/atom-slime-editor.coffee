@@ -11,10 +11,17 @@ class AtomSlimeEditor
 
   constructor: (@editor, @statusView, @swank) ->
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
+    @editorElement = atom.views.getView(@editor)
     @subs = new CompositeDisposable
     @subs.add editor.onDidStopChanging => @stoppedEditingCallback()
     @subs.add editor.onDidChangeCursorPosition => @cursorMovedCallback()
     @subs.add editor.onDidDestroy => @editorDestroyedCallback()
+
+    # TODO - make this a context menu item... not a command that only works through
+    # command pallette in that window...
+    @subs.add atom.commands.add @editorElement, 'slime:goto-definition': =>
+      @openDefinition()
+
     # Pretend we just finished editing, so that way things get up to date
     @stoppedEditingCallback()
 
@@ -62,6 +69,20 @@ class AtomSlimeEditor
       [start, end] = range
       sexp = text[start...end]
     return sexp: sexp, relativeCursor: index - start
+
+  openDefinition: ->
+    if @swank.connected
+      # TODO - make this better, to include characters like dashes via wordRegExp
+      #word = editor.getWordUnderCursor(includeNonWordCharacters: true)
+      word = @editor.getSelectedText()
+      console.log word
+
+      @swank.find_definitions(word, @pkg).then (result) =>
+        console.log result
+
+
+    else
+      atom.notifications.addWarning("Not connected to Lisp", detail:"Going to a definition requires querying the Lisp image. So connect to it first!")
 
 
   editorDestroyedCallback: ->
