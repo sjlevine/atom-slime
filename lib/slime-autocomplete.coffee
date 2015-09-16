@@ -13,7 +13,7 @@ module.exports =
 
   # Required: Return a promise, an array of suggestions, or null.
   getSuggestions: ({editor, bufferPosition, scopeDescriptor, prefix}) ->
-    if @swank.connected and !@disabled and prefix != ""
+    if @swank?.connected and !@disabled and prefix != ""
       return @swank.autocomplete(prefix, @repl.pkg).then (acs) =>
         return (text:ac for ac in acs)
     else
