@@ -1,6 +1,7 @@
 {CompositeDisposable, Point, Range} = require 'atom'
 paredit = require 'paredit.js'
 slime = require './slime-functions'
+Bubble = require './atom-slime-bubble'
 
 module.exports =
 class AtomSlimeEditor
@@ -77,9 +78,8 @@ class AtomSlimeEditor
       word = @editor.getSelectedText()
       console.log word
 
-      @swank.find_definitions(word, @pkg).then (result) =>
-        console.log result
-
+      @swank.find_definitions(word, @pkg).then (refs) =>
+        bubble = new Bubble(atom.workspace.getActiveTextEditor(), refs)
 
     else
       atom.notifications.addWarning("Not connected to Lisp", detail:"Going to a definition requires querying the Lisp image. So connect to it first!")

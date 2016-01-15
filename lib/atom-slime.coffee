@@ -45,12 +45,6 @@ module.exports = AtomSlime =
     #@subs.add atom.commands.add 'atom-workspace', 'slime:show-debugger': => @views.repl.showDebugger true
     #@subs.add atom.commands.add 'atom-workspace', 'slime:hide-debugger': => @views.repl.showDebugger false
 
-    @subs.add atom.commands.add 'atom-workspace', 'slime:testfn': =>
-      utils = require "./utils"
-      file = "/home/steve/Desktop/atom-slime/lib/utils.coffee"
-      index = 5
-      utils.openFileToIndex(file, index)
-
     # Keep track of all Lisp editors
     @subs.add atom.workspace.observeTextEditors (editor) =>
       if editor.getGrammar().name == "Lisp"
@@ -61,6 +55,7 @@ module.exports = AtomSlime =
           if editor.getGrammar().name == "Lisp"
             ase = new AtomSlimeEditor(editor, @views.statusView, @swank)
             @ases.add ase
+
 
 
   # Sets up a swank client but does not connect

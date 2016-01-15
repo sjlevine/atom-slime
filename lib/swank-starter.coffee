@@ -12,6 +12,7 @@ class SwankStarter
     command = @lisp
     args = ['--load', "#{@path}/start-swank.lisp"]
     @process = new BufferedProcess command:command, args:args, stdout:@stdout_callback, exit:@exit_callback
+    console.log "Started a swank server"
 
   stdout_callback: (output) ->
     #console.log output
