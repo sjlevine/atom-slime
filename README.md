@@ -5,18 +5,18 @@ Integrates SLIME (the Superior Lisp Interaction Mode for Emacs) with Atom! This 
 Current features of this package:
 
 - Read-eval-print-loop (REPL) for interactive Lisp development
-- Integrated debugger (work in progress)
+- Integrated debugger (work in progress on stack trace)
+- Jumping to a method definition (use alt-., or the `slime:goto-definition` command)
+- Autocomplete suggestions from swank
 - Autodocumentation
 
 Future features:
-- "Go to method definition" etc.
-- Autocomplete suggestions from swank
 - Interactive object inspection
 - Stack trace in debugger
-- "Compile this function"
+- "Compile this function" command
 
 
-**Note**: This package is still in active development! Contributions and bug reports are welcome.
+**Note**: This package is still in beta and in active development! Contributions and bug reports are welcome.
 
 System Requirements
 -------------------
