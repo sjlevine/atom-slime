@@ -78,7 +78,7 @@ class AtomSlimeEditor
       # (taking into account how Lisp parses word, which is different than many other languages!)
       word = @editor.getSelectedText()
       word = @editor.getWordUnderCursor({wordRegex: utils.lispWordRegex}) if word == ""
-      console.log "Looking up" + word
+      console.log "Looking up: " + word
 
       @swank.find_definitions(word, @pkg).then (refs) =>
         bubble = new Bubble(atom.workspace.getActiveTextEditor(), refs)
