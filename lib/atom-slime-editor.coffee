@@ -2,6 +2,7 @@
 paredit = require 'paredit.js'
 slime = require './slime-functions'
 Bubble = require './atom-slime-bubble'
+utils = require './utils'
 
 module.exports =
 class AtomSlimeEditor
@@ -73,10 +74,11 @@ class AtomSlimeEditor
 
   openDefinition: ->
     if @swank.connected
-      # TODO - make this better, to include characters like dashes via wordRegExp
-      #word = editor.getWordUnderCursor(includeNonWordCharacters: true)
+      # Get either the currently selected word, or the current word under the cursor
+      # (taking into account how Lisp parses word, which is different than many other languages!)
       word = @editor.getSelectedText()
-      console.log word
+      word = @editor.getWordUnderCursor({wordRegex: utils.lispWordRegex}) if word == ""
+      console.log "Looking up" + word
 
       @swank.find_definitions(word, @pkg).then (refs) =>
         bubble = new Bubble(atom.workspace.getActiveTextEditor(), refs)

@@ -1,6 +1,8 @@
 {Range, Point} = require 'atom'
 
 module.exports =
+  lispWordRegex: /^[	 ]*$|[^\s\(\)"',;#%&\|`…]+|[\/\\\(\)"':,\.;<>~!@#\$%\^&\*\|\+=\[\]\{\}`\?\-…]+/g
+  
   indexToPoint: (index, src) ->
     substr = src.substring(0, index)
     row = (substr.match(/\n/g) || []).length
