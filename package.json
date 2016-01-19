@@ -16,9 +16,9 @@
     "atom": ">=1.0.0 <2.0.0"
   },
   "dependencies": {
-    "paredit.js": "^0.2.9",
-    "atom-space-pen-views": "^2.0.5",
-    "swank-client-js": "^0.4.3"
+    "paredit.js": "^0.2.11",
+    "atom-space-pen-views": "^2.1.1",
+    "swank-client-js": "^0.6.1"
   },
   "consumedServices": {
     "status-bar": {
