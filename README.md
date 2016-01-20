@@ -23,9 +23,9 @@ Future features:
 
 Guide to setting up Atom as your main Lisp editor!
 -------------------------------------------
-By following this instructions, you can use Atom very effectively as your Lisp editor.
+By following these instructions, you can use Atom very effectively as your Lisp editor.
 
-1. Install this `atom-slime` package, as well as `language-lisp` package (syntax highlighting) and the `lisp-paredit` package (proper idiomatic lisp indentation and parenthesis editing)
+1. Install this `atom-slime` package, as well as the `language-lisp` package (syntax highlighting) and the `lisp-paredit` package (proper idiomatic lisp indentation and parenthesis editing)
 
 2. Install a lisp if you don't already have one (such as SBCL)
 
@@ -50,9 +50,9 @@ Once you've followed the above steps, you should have:
 - Syntax highlighting if you open a file ending in `.lisp`
 - Proper lisp indentation when you hit tab
 
-To start a REPL (an interactive terminal where you can interact with Lisp live), run the `Slime: Start` command from the command pallet. A REPL should then pop up. Note that if this is your first time using `atom-slime`, or you've updated your lisp process, you may get some warning messages about not being to connect. Try again in a minute or so and it should work after your lisp has finished compiling the swank code.
+To start a REPL (an interactive terminal where you can interact with Lisp live), run the `Slime: Start` command from the command pallet. A REPL should then pop up. Note that if this is your first time using `atom-slime`, or you've updated your lisp process, you may get some warning messages about not being able to connect. This is normal; wait a minute or so, restart Atom, and try again and it should work. (This happens because your lisp is compiling the swank server and isn't ready before this package times out).
 
-With the REPL, you can type commands, see results, switch packages, and more. It's a great way to write Lisp code! A debugger will come up if an error occurs.
+With the REPL, you can type commands, see results, switch packages, and more. It's a great way to write Lisp code! A debugger will come up if an error occurs. You can also use the up & down arrows to scroll up through your past commands.
 
 If you've compiled your lisp code, placing the cursor over a method will cause a documentation string to appear at the bottom of the atom window, showing you the function arguments and their order.
 

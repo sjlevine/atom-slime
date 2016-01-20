@@ -27,7 +27,7 @@ module.exports =
   # A better prefix for Lisp
   getPrefix: (editor, bufferPosition) ->
     # Get the text for the line up to the triggered buffer position
-    line = editor.getTextInRange([[bufferPosition.row, @repl.prompt.length], bufferPosition])
+    line = editor.getTextInRange([[bufferPosition.row, (@repl?.prompt?.length or 0)], bufferPosition])
     # Match the regex to the line, and return the match
     matches = line.match(utils.lispWordRegex)
     console.log matches

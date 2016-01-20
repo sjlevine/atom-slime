@@ -55,9 +55,7 @@ class REPLView
 
   # Set up the REPL GUI for use
   setupRepl: () ->
-    @insertPrompt()
-    @editor.setText @prompt
-    @editor.moveToEndOfLine()
+    @clearREPL()
     @subs.add atom.commands.add @editorElement, 'core:backspace': (event) =>
       # Check buffer position!
       point = @editor.getCursorBufferPosition()
@@ -96,6 +94,10 @@ class REPLView
       @cycleForward()
       event.stopImmediatePropagation()
 
+    # Add a clear command
+    @subs.add atom.commands.add @editorElement, 'slime:clear-repl': (event) =>
+      @clearREPL()
+
 
     @subs.add @editor.onDidDestroy =>
       @closeRepl()
@@ -108,6 +110,10 @@ class REPLView
     #   pointAbove = new Point(point.row - 1, @ed.lineTextForBufferRow(point.row - 1).length)
     #   @ed.setTextInBufferRange(new Range(pointAbove, pointAbove), "\nmonkus",undo:'skip')
     #   @ed.scrollToBotom()
+
+  clearREPL: () ->
+    @editor.setText @prompt
+    @editor.moveToEndOfLine()
 
   # Adds non-user-inputted text to the REPL
   appendText: (text, colorTags=true) ->
