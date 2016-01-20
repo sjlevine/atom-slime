@@ -68,9 +68,9 @@ module.exports = AtomSlime =
   swankStart: () ->
     # Start a new process
     @process = new SwankStarter
-    @process.start()
-    # Connect to it!
-    @swankConnect()
+    if @process.start()
+      # Try and connect if successful!
+      @swankConnect()
 
   # Connect the to a running swank client
   swankConnect: () ->
@@ -78,7 +78,7 @@ module.exports = AtomSlime =
 
   tryToConnect: (i) ->
     if i > @maxConnectionAttempts
-      atom.notifications.addWarning("Couldn't connect to Lisp!", detail:"Did you start a Lisp swank server?")
+      atom.notifications.addWarning("Couldn't connect to Lisp! Did you start a Lisp swank server?\n\nIf this is your first time running `atom-slime`, this is normal. Try running `slime:connect` in a minute or so once it's finished compiling.")
       return false
     promise = @swank.connect()
     promise.then (=> @swankConnected()), ( => setTimeout ( => @tryToConnect(i + 1)), 200)
