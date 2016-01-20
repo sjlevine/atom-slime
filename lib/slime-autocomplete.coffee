@@ -15,7 +15,6 @@ module.exports =
   # Required: Return a promise, an array of suggestions, or null.
   getSuggestions: ({editor, bufferPosition}) ->
     prefix = @getPrefix(editor, bufferPosition)
-    console.log prefix
     if @swank?.connected and !@disabled and prefix != ""
       return @swank.autocomplete(prefix, @repl.pkg).then (acs) =>
         return ({text: ac, replacementPrefix: prefix} for ac in acs)
@@ -30,7 +29,6 @@ module.exports =
     line = editor.getTextInRange([[bufferPosition.row, @repl.prompt.length], bufferPosition])
     # Match the regex to the line, and return the match
     matches = line.match(utils.lispWordRegex)
-    console.log matches
     return matches?[matches?.length - 1] or ''
 
   # (optional): called _after_ the suggestion `replacementPrefix` is replaced

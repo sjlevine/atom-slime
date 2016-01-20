@@ -62,7 +62,7 @@ module.exports = AtomSlime =
   setupSwank: () ->
     @swank = new Swank.Client("localhost", 4005);
     @swank.on 'disconnect', =>
-      console.log "Disconnected!"
+      atom.notifications.addError("Disconnected from Lisp")
 
   # Start a swank server and then connect to it
   swankStart: () ->
