@@ -29,6 +29,13 @@ module.exports = AtomSlime =
       type: 'string'
       default: 'sbcl'
 
+    autoStart:
+      title: 'Start lisp when Atom opens'
+      description: 'When checked, a Lisp REPL will automatically open every time you open atom.'
+      type: 'boolean'
+      default: false
+
+
   activate: (state) ->
     # Setup a swank client instance
     @setupSwank()
@@ -51,6 +58,10 @@ module.exports = AtomSlime =
           if editor.getGrammar().name == "Lisp"
             ase = new AtomSlimeEditor(editor, @views.statusView, @swank)
             @ases.add ase
+
+    # If desired, automatically start Swank.
+    if atom.config.get('atom-slime.autoStart')
+      @swankStart()
 
 
 
