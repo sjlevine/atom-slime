@@ -110,9 +110,12 @@ class REPLView
     #   @ed.scrollToBotom()
 
   # Adds non-user-inputted text to the REPL
-  appendText: (text) ->
+  appendText: (text, colorTags=true) ->
     @inputFromUser = false
-    @editor.insertText(text)
+    if colorTags
+      @editor.insertText("\x1B#{text}\x1B")
+    else
+      @editor.insertText(text)
     @inputFromUser = true
 
   # Retrieve the string of the user's input
@@ -132,7 +135,7 @@ class REPLView
 
       @preventUserInput = true
       @editor.moveToEndOfLine()
-      @appendText("\n")
+      @appendText("\n",false)
       promise = @swank.eval input, @pkg
       promise.then =>
         @insertPrompt()
@@ -142,7 +145,7 @@ class REPLView
 
 
   insertPrompt: () ->
-    @appendText "\n" + @prompt
+    @appendText("\n" + @prompt, false)
     # Now, mark it
     row = @editor.getLastBufferRow()
     marker = @editor.markBufferPosition(new Point(row,0))
