@@ -66,8 +66,11 @@ module.exports = AtomSlime =
 
   # Start a swank server and then connect to it
   swankStart: () ->
+    # Start a new process
     @process = new SwankStarter
     @process.start()
+    # Connect to it!
+    @swankConnect()
 
   # Connect the to a running swank client
   swankConnect: () ->
