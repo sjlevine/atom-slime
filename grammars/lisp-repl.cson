@@ -12,7 +12,28 @@
     'match': '#<[^\\(\\)]*>'
     'name': 'constant.language.lisp'
   }
-
+  {
+    'begin': '\x1B'
+    'beginCaptures':
+      '0':
+        'name': 'punctuation.definition.string.begin.lisp'
+    'end': '\x1B'
+    'endCaptures':
+      '0':
+        'name': 'punctuation.definition.string.end.lisp'
+    'name': 'string.quoted.double.lisp'
+  }
+  {
+    'begin': '\x1A'
+    'beginCaptures':
+      '0':
+        'name': 'punctuation.definition.string.begin.lisp'
+    'end': '\x1A'
+    'endCaptures':
+      '0':
+        'name': 'punctuation.definition.string.end.lisp'
+    'name': 'variable.other.global.lisp'
+  }
 
   {'include': 'source.lisp'}
 ]

@@ -6,8 +6,8 @@
       'label': 'Slime'
       'submenu': [
         {
-          'label': 'Connect'
-          'command': 'slime:connect'
+          'label': 'Start'
+          'command': 'slime:start'
         }
       ]
     ]

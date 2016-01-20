@@ -55,9 +55,7 @@ class REPLView
 
   # Set up the REPL GUI for use
   setupRepl: () ->
-    @insertPrompt()
-    @editor.setText @prompt
-    @editor.moveToEndOfLine()
+    @clearREPL()
     @subs.add atom.commands.add @editorElement, 'core:backspace': (event) =>
       # Check buffer position!
       point = @editor.getCursorBufferPosition()
@@ -96,6 +94,10 @@ class REPLView
       @cycleForward()
       event.stopImmediatePropagation()
 
+    # Add a clear command
+    @subs.add atom.commands.add @editorElement, 'slime:clear-repl': (event) =>
+      @clearREPL()
+
 
     @subs.add @editor.onDidDestroy =>
       @closeRepl()
@@ -109,11 +111,25 @@ class REPLView
     #   @ed.setTextInBufferRange(new Range(pointAbove, pointAbove), "\nmonkus",undo:'skip')
     #   @ed.scrollToBotom()
 
+  clearREPL: () ->
+    @editor.setText @prompt
+    @editor.moveToEndOfLine()
+
   # Adds non-user-inputted text to the REPL
-  appendText: (text) ->
+  appendText: (text, colorTags=true) ->
     @inputFromUser = false
-    @editor.insertText(text)
+    if colorTags
+      @editor.insertText("\x1B#{text}\x1B")
+    else
+      @editor.insertText(text)
     @inputFromUser = true
+
+
+  appendPresentationMarker: () ->
+    @inputFromUser = false
+    @editor.insertText("\x1A")
+    @inputFromUser = true
+
 
   # Retrieve the string of the user's input
   getUserInput: (text) ->
@@ -132,7 +148,7 @@ class REPLView
 
       @preventUserInput = true
       @editor.moveToEndOfLine()
-      @appendText("\n")
+      @appendText("\n",false)
       promise = @swank.eval input, @pkg
       promise.then =>
         @insertPrompt()
@@ -142,7 +158,7 @@ class REPLView
 
 
   insertPrompt: () ->
-    @appendText "\n" + @prompt
+    @appendText("\n" + @prompt, false)
     # Now, mark it
     row = @editor.getLastBufferRow()
     marker = @editor.markBufferPosition(new Point(row,0))
@@ -154,8 +170,14 @@ class REPLView
     @swank.on 'new_package', (pkg) => @setPackage(pkg)
 
     # On printing text from REPL response
-    @swank.on 'presentation_print', (msg) =>
-      @appendText msg.replace(/\\\"/g, '"')
+    @swank.on 'print_string', (msg) =>
+      @appendText(msg.replace(/\\\"/g, '"'))
+
+    # On printing presentation visualizations (like for results)
+    @swank.on 'presentation_start', () =>
+      @appendPresentationMarker()
+    @swank.on 'presentation_end', () =>
+      @appendPresentationMarker()
 
     # Debug functions
     @swank.on 'debug_setup', (obj) => @createDebugTab(obj)

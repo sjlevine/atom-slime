@@ -6,41 +6,62 @@ Current features of this package:
 
 - Read-eval-print-loop (REPL) for interactive Lisp development
 - Integrated debugger (work in progress on stack trace)
-- Jumping to a method definition (use alt-., or the `slime:goto-definition` command)
-- Autocomplete suggestions from swank
-- Autodocumentation
+- Jumping to a method definition
+- Autocomplete suggestions based on your code
+- Function method argument order documentation
 
 Future features:
 - Interactive object inspection
 - Stack trace in debugger
 - "Compile this function" command
+- "Who calls this function" command
 
 
 **Note**: This package is still in beta and in active development! Contributions and bug reports are welcome.
 
-System Requirements
--------------------
-Here are the requirements for using `atom-slime`:
 
-- Lisp (known to work with SBCL 1.2.12 and greater)
-- The swank code. If you run Emacs and have used SLIME before, you already have it installed. If not, check it out from https://github.com/slime/slime.git
 
-The following may not be strictly necessary but are highly recommended:
-- The `language-lisp` atom package (https://atom.io/packages/language-lisp)
-- The `lisp-paredit` atom package (https://atom.io/packages/lisp-paredit)
+Guide to setting up Atom as your main Lisp editor!
+-------------------------------------------
+By following these instructions, you can use Atom very effectively as your Lisp editor.
 
-How to run
-------------
+1. Install this `atom-slime` package, as well as the `language-lisp` package (syntax highlighting) and the `lisp-paredit` package (proper idiomatic lisp indentation and parenthesis editing)
 
-First, you'll need to start a swank server in lisp. For example, if you use SBCL, run the following in a terminal:
+2. Install a lisp if you don't already have one (such as SBCL)
 
+3. Download the `slime` code, which exists in a separate repository. Place it somewhere safe (you'll need it's location in the following step). Note that if you've used Emacs before, you may already have slime somewhere on your computer. Otherwise, you can download it here:
+https://github.com/slime/slime.git
+
+4. After installing the `atom-slime` package, go to its package preferences page within Atom. Under the "Lisp Process" field, enter the executable for your lisp (ex. `sbcl`. Note that on some platforms you may need the full pathname, such as `/usr/bin/sbcl`). Under the "Slime Path" field, enter the path where you have slime on your computer from the above step.
+
+5. (Optional) Consider adding the following to your Atom keymap file:
 ```
-cd /directory/to/where/you/have/slime-swank
-sbcl --load start-swank.lisp
+'atom-text-editor[data-grammar~="lisp"]':
+    'tab': 'lisp-paredit:indent'
 ```
+This will allow the tab key to trigger automatic, correct indentation of your Lisp code.
 
-Once that's running, you  have a Lisp processing running a swank server awaiting connections. The next step is to connect to it via the `atom-slime` package.
+All done!
 
-Within Atom, run the `Slime: Connect` command from the command palette. That will connect to the Lisp swank server. The REPL should now become visible and should work.
 
-Additionally, if you open a *.lisp file and start typing functions or move the cursor over functions, you'll autodocumentation strings appear in the status bar.
+How to Edit Lisp code with Atom
+----------------------------
+Once you've followed the above steps, you should have:
+- Syntax highlighting if you open a file ending in `.lisp`
+- Proper lisp indentation when you hit tab
+
+To start a REPL (an interactive terminal where you can interact with Lisp live), run the `Slime: Start` command from the command pallet. A REPL should then pop up. Note that if this is your first time using `atom-slime`, or you've updated your lisp process, you may get some warning messages about not being able to connect. This is normal; wait a minute or so, restart Atom, and try again and it should work. (This happens because your lisp is compiling the swank server and isn't ready before this package times out).
+
+With the REPL, you can type commands, see results, switch packages, and more. It's a great way to write Lisp code! A debugger will come up if an error occurs. You can also use the up & down arrows to scroll up through your past commands.
+
+If you've compiled your lisp code, placing the cursor over a method will cause a documentation string to appear at the bottom of the atom window, showing you the function arguments and their order.
+
+If you want to jump to where a certain method is defined, go to it and press <kbd>alt</kbd> + <kbd>.</kbd> or use the `Slime: Goto Definition` function in Atom. A little pop up window will come up and ask you which method you'd like to go to (since methods could be overloaded). Use the keyboard to go up and down, and press enter to jump to the definition you choose.
+
+
+
+How it works
+--------------
+This package makes use of the superb work from the slime project. Slime started as a way to integrate Lisp with Emacs, a popular text editor for Lisp. It works by starting what is known as a swank server, which is code that runs in Lisp. Emacs then runs separately and connects to the swank server. It's able to make remote procedure calls to the swank server to compile functions, lookup function definitions from your live code, and much more thanks to the fact that Lisp is such a dynamic language.
+
+This package uses the swank server from the slime project unchanged. This package allows Atom to speak the same protocol as Emacs for controlling the swank server and integrating Lisp into the editor.
