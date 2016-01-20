@@ -118,6 +118,13 @@ class REPLView
       @editor.insertText(text)
     @inputFromUser = true
 
+
+  appendPresentationMarker: () ->
+    @inputFromUser = false
+    @editor.insertText("\x1A")
+    @inputFromUser = true
+
+
   # Retrieve the string of the user's input
   getUserInput: (text) ->
     lastLine = @editor.lineTextForBufferRow(@editor.getLastBufferRow())
@@ -157,8 +164,14 @@ class REPLView
     @swank.on 'new_package', (pkg) => @setPackage(pkg)
 
     # On printing text from REPL response
-    @swank.on 'presentation_print', (msg) =>
-      @appendText msg.replace(/\\\"/g, '"')
+    @swank.on 'print_string', (msg) =>
+      @appendText(msg.replace(/\\\"/g, '"'))
+
+    # On printing presentation visualizations (like for results)
+    @swank.on 'presentation_start', () =>
+      @appendPresentationMarker()
+    @swank.on 'presentation_end', () =>
+      @appendPresentationMarker()
 
     # Debug functions
     @swank.on 'debug_setup', (obj) => @createDebugTab(obj)
