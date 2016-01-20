@@ -100,7 +100,7 @@ class REPLView
 
 
     @subs.add @editor.onDidDestroy =>
-      @closeRepl()
+      @destroy()
 
     # Hide the gutter(s)
     # g.hide() for g in @editor.getGutters()
@@ -114,6 +114,7 @@ class REPLView
   clearREPL: () ->
     @editor.setText @prompt
     @editor.moveToEndOfLine()
+
 
   # Adds non-user-inputted text to the REPL
   appendText: (text, colorTags=true) ->
@@ -250,7 +251,7 @@ class REPLView
     @prompt = "#{@pkg}> "
 
 
-  closeRepl: ->
+  destroy: ->
     if @swank.connected
       @closeDebugTab()
       @subs.dispose()

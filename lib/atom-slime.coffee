@@ -47,6 +47,8 @@ module.exports = AtomSlime =
     # Setup connections
     @subs.add atom.commands.add 'atom-workspace', 'slime:start': => @swankStart()
     @subs.add atom.commands.add 'atom-workspace', 'slime:connect': => @swankConnect()
+    @subs.add atom.commands.add 'atom-workspace', 'slime:disconnect': => @swankDisconnect()
+    @subs.add atom.commands.add 'atom-workspace', 'slime:restart': => @swankRestart()
 
     # Keep track of all Lisp editors
     @subs.add atom.workspace.observeTextEditors (editor) =>
@@ -96,6 +98,16 @@ module.exports = AtomSlime =
       atom.notifications.addSuccess('Connected to Lisp!', detail:'Code away!')
       @views.statusView.message("Slime connected!")
       @views.showRepl()
+
+
+  swankDisconnect: () ->
+    @swank.disconnect()
+
+
+  swankRestart: () ->
+    @swank.disconnect()
+    @views.destroy()
+    setTimeout(( => @swankStart()), 500)
 
 
   deactivate: ->
