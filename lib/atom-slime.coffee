@@ -101,12 +101,12 @@ module.exports = AtomSlime =
 
 
   swankDisconnect: () ->
-    @swank.disconnect()
+    @swank.quit()
+    @views.destroyRepl()
 
 
   swankRestart: () ->
-    @swank.disconnect()
-    @views.destroy()
+    @swankDisconnect()
     setTimeout(( => @swankStart()), 500)
 
 

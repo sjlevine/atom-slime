@@ -14,6 +14,10 @@ class AtomSlimeView
   # Tear down any state and detach
   destroy: ->
     @statusView?.destroy()
+    @destroyRepl()
+
+
+  destroyRepl: ->
     @repl?.destroy()
 
   showRepl: ->

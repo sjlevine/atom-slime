@@ -8,6 +8,14 @@
         {
           'label': 'Start'
           'command': 'slime:start'
+        },
+        {
+          'label': 'Disconnect'
+          'command': 'slime:disconnect'
+        },
+        {
+          'label': 'Restart'
+          'command': 'slime:restart'
         }
       ]
     ]
