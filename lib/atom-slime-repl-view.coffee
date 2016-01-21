@@ -86,13 +86,17 @@ class REPLView
       if @inputFromUser and (@preventUserInput or point.column < @prompt.length or point.row < @editor.getLastBufferRow())
         event.cancel()
 
-    # Set up up/down arrow previous command cycling
+    # Set up up/down arrow previous command cycling. But don't do it
+    # if the autocomplete window is active...
+    # TODO - should check autocomplete plus's settings and make sure core movements is enabled?
     @subs.add atom.commands.add @editorElement, 'core:move-up': (event) =>
-      @cycleBack()
-      event.stopImmediatePropagation()
+      if not @isAutoCompleteActive()
+        @cycleBack()
+        event.stopImmediatePropagation()
     @subs.add atom.commands.add @editorElement, 'core:move-down': (event) =>
-      @cycleForward()
-      event.stopImmediatePropagation()
+      if not @isAutoCompleteActive()
+        @cycleForward()
+        event.stopImmediatePropagation()
 
     # Add a clear command
     @subs.add atom.commands.add @editorElement, 'slime:clear-repl': (event) =>
@@ -110,6 +114,11 @@ class REPLView
     #   pointAbove = new Point(point.row - 1, @ed.lineTextForBufferRow(point.row - 1).length)
     #   @ed.setTextInBufferRange(new Range(pointAbove, pointAbove), "\nmonkus",undo:'skip')
     #   @ed.scrollToBotom()
+
+
+  isAutoCompleteActive: () ->
+    return $(@editorElement).hasClass('autocomplete-active')
+
 
   clearREPL: () ->
     @editor.setText @prompt
