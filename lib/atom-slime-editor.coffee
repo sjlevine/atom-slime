@@ -23,6 +23,8 @@ class AtomSlimeEditor
     # command pallette in that window...
     @subs.add atom.commands.add @editorElement, 'slime:goto-definition': =>
       @openDefinition()
+    @subs.add atom.commands.add @editorElement, 'slime:compile-function': =>
+      @compileFunction()
 
     # Pretend we just finished editing, so that way things get up to date
     @stoppedEditingCallback()
@@ -72,6 +74,18 @@ class AtomSlimeEditor
       sexp = text[start...end]
     return sexp: sexp, relativeCursor: index - start
 
+  # Return the outermost sexp range!
+  getOutermostSexp: ->
+    index = @getCursorIndex()
+    text = @editor.getText()
+    range = paredit.navigator.rangeForDefun @ast, index
+    if not range
+      return null
+    [start, end] = range
+    sexp = text[start...end]
+    return {sexp: sexp, start: start, end: end}
+
+
   openDefinition: ->
     if @swank.connected
       # Get either the currently selected word, or the current word under the cursor
@@ -86,6 +100,14 @@ class AtomSlimeEditor
     else
       atom.notifications.addWarning("Not connected to Lisp", detail:"Going to a definition requires querying the Lisp image. So connect to it first!")
 
+
+  compileFunction: ->
+    # Compile the function under the cursor
+    console.log "Compile function"
+    sexp = @getOutermostSexp()
+    if sexp
+      range = Range(utils.convertIndexToPoint(sexp.start, @editor), utils.convertIndexToPoint(sexp.end, @editor))
+      utils.highlightRange(range, @editor, delay=250)
 
   editorDestroyedCallback: ->
     console.log "Closed!"

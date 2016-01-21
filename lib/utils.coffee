@@ -2,7 +2,7 @@
 
 module.exports =
   lispWordRegex: /^[	 ]*$|[^\s\(\)"',;#%&\|`…]+|[\/\\\(\)"':,\.;<>~!@#\$%\^&\*\|\+=\[\]\{\}`\?\-…]+/g
-  
+
   indexToPoint: (index, src) ->
     substr = src.substring(0, index)
     row = (substr.match(/\n/g) || []).length
@@ -24,3 +24,12 @@ module.exports =
     atom.workspace.open(file, {}).then (editor) =>
       point = @convertIndexToPoint(index, editor)
       editor.setCursorBufferPosition(point)
+
+  highlightRange: (range, editor, delay=1000) ->
+    # Highlight the given (Atom) range temporarily and fade out
+    marker = editor.markBufferRange(range, invalidate: 'never')
+    decoration = editor.decorateMarker(marker, type: 'highlight', class: 'slime-flash-highlight')
+    setTimeout((=>
+      decoration.setProperties(type: 'highlight', class: 'slime-flash-highlight animated')
+      setTimeout((=> marker.destroy()), 750)
+      ), delay)

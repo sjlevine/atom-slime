@@ -10,3 +10,4 @@
 
 'atom-text-editor[data-grammar~="lisp"]':
     'alt-.': 'slime:goto-definition'
+    'ctrl-c ctrl-c': 'slime:compile-function'
