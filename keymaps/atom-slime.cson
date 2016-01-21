@@ -11,3 +11,7 @@
 'atom-text-editor[data-grammar~="lisp"]':
     'alt-.': 'slime:goto-definition'
     'ctrl-c ctrl-c': 'slime:compile-function'
+
+'atom-text-editor.slime-repl':
+    'ctrl-c ctrl-c': 'slime:interrupt-lisp'
+    'ctrl-=': 'slime:clear-repl'

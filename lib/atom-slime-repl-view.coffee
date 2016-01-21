@@ -55,7 +55,11 @@ class REPLView
 
   # Set up the REPL GUI for use
   setupRepl: () ->
+    # Make sure it's marked with the special REPL class - helps some of our keybindings!
+    $(@editorElement).addClass('slime-repl')
+    # Clear the REPL
     @clearREPL()
+    # Attach event handlers
     @subs.add atom.commands.add @editorElement, 'core:backspace': (event) =>
       # Check buffer position!
       point = @editor.getCursorBufferPosition()
@@ -101,6 +105,10 @@ class REPLView
     # Add a clear command
     @subs.add atom.commands.add @editorElement, 'slime:clear-repl': (event) =>
       @clearREPL()
+    # Add an interrupt command
+    @subs.add atom.commands.add @editorElement, 'slime:interrupt-lisp': (event) =>
+      if @swank.connected
+        @swank.interrupt()
 
 
     @subs.add @editor.onDidDestroy =>
