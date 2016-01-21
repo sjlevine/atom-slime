@@ -41,6 +41,10 @@ https://github.com/slime/slime.git
 ```
 This will allow the tab key to trigger automatic, correct indentation of your Lisp code.
 
+6. (Optional) In Atom's `autocomplete-plus` package, consider changing the "Keymap For Confirming A Suggestion" option from "tab and enter" to just "tab". This makes autocomplete more amenable when using the REPL, so that pressing enter will complete your command rather than triggering autocomplete.
+
+7. (Optional) In Atom's `bracket-matcher` package, consider unchecking the "Autocomplete Brackets" option. The `lisp-paredit` package above will take care of autocompleting parenthesis when you're editing a lisp file. Unchecking this option will prevent single quotes from being autocompleted in pairs, allowing you to define lisp symbols easier (for example, `(setf x 'some-symbol)`).
+
 All done!
 
 
