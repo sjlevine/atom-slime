@@ -15,7 +15,13 @@ class SwankStarter
       return false
     command = @lisp
     args = ['--load', @swank_script]
-    @process = new BufferedProcess command:command, args:args, stdout:@stdout_callback, exit:@exit_callback
+    @process = new BufferedProcess({
+      command: command,
+      args: args,
+      stdout: @stdout_callback,
+      stderr: @stderr_callback,
+      exit: @exit_callback
+    })
     console.log "Started a swank server"
     return true
 
@@ -33,6 +39,9 @@ class SwankStarter
       return false
 
   stdout_callback: (output) ->
+    #console.log output
+
+  stderr_callback: (output) ->
     #console.log output
 
   exit_callback: (code) ->
