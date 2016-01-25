@@ -120,8 +120,8 @@ class AtomSlimeEditor
 
         # Trigger a compilation
         line_reference = p_start.row + 1
-        col_reference = p_start.col + 1
-        @swank.compile_string(sexp.sexp, title, path, sexp.start, p_start.col + 1, line_reference, col_reference, @pkg)
+        col_reference = p_start.column + 1
+        @swank.compile_string(sexp.sexp, title, path, sexp.start, line_reference, col_reference, @pkg)
 
         # Trigger the highlight effect
         range = Range(p_start, p_end)

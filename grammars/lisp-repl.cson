@@ -5,7 +5,7 @@
 'name': 'Lisp REPL'
 'patterns': [
   {
-    'match': '^([\\w\\-*+:]+>)'
+    'match': '^[\x1B\x1A]*([\\w\\-*+:]+>)'
     'name': 'repl-prompt.keyword.control.lisp'
   }
   {

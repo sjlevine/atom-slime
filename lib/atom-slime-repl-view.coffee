@@ -189,7 +189,7 @@ class REPLView
 
     # On printing text from REPL response
     @swank.on 'print_string', (msg) =>
-      @appendText(msg.replace(/\\\"/g, '"'))
+      @print_string_callback(msg)
 
     # On printing presentation visualizations (like for results)
     @swank.on 'presentation_start', () =>
@@ -205,6 +205,40 @@ class REPLView
     @swank.on 'debug_return', (obj) =>
       # TODO - keep track of different levels
       @closeDebugTab()
+
+
+  print_string_callback: (msg) ->
+    # Print something to the REPL when the swank server says to.
+    # However, we need to make sure we're not interfering with the cursor!
+    msg = msg.replace(/\\\"/g, '"')
+    if @preventUserInput
+      # A command is being run, no prompt is in the way - so directly print
+      # anything received to the REPL
+      @appendText(msg)
+    else
+      # There's a REPL in the way - so go to the line before the REPL,
+      # insert the message, then go back down to the corresponding line in the REPL!
+      # But only move the user's cursor back to the REPL line if it was there to
+      # begin with, otherwise put it back at it's absolute location.
+      p_cursor = @editor.getCursorBufferPosition()
+      row_repl = @editor.getLastBufferRow()
+      cursor_originally_in_repl = (p_cursor.row == row_repl)
+      # Edge case: if the row is the last line, insert a new line right above then continue.
+      if row_repl == 0
+        @editor.setCursorBufferPosition([0, 0])
+        @appendText("\n", colorTags=false)
+        row_repl = 1
+      # Compute the cursor position to the last character on the line above the REPL (we know it exists!)
+      p_before_cursor = Point(row_repl - 1, @editor.lineTextForBufferRow(row_repl - 1).length)
+      @editor.setCursorBufferPosition(p_before_cursor, {autoScroll: false})
+      @appendText(msg)
+      if cursor_originally_in_repl
+        # Put back in the REPL (which may now have a different row/line)
+        @editor.setCursorBufferPosition([@editor.getLastBufferRow(), p_cursor.column])
+      else
+        # Put back the cursor where it was
+        @editor.setCursorBufferPosition(p_cursor)
+
 
 
   cycleBack: () ->
