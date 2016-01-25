@@ -106,8 +106,26 @@ class AtomSlimeEditor
     console.log "Compile function"
     sexp = @getOutermostSexp()
     if sexp
-      range = Range(utils.convertIndexToPoint(sexp.start, @editor), utils.convertIndexToPoint(sexp.end, @editor))
-      utils.highlightRange(range, @editor, delay=250)
+      if @swank.connected
+        # Retrieve the file & path (and error out if not saved yet)
+        title = @editor.getTitle()
+        path = @editor.getPath()
+        if not path
+          atom.notifications.addWarning("Please save this file before compiling.")
+          return false
+
+        # Convert the start and end of sexp to Atom Points
+        p_start = utils.convertIndexToPoint(sexp.start, @editor)
+        p_end = utils.convertIndexToPoint(sexp.end, @editor)
+
+        # Trigger a compilation
+        line_reference = p_start.row + 1
+        col_reference = p_start.col + 1
+        @swank.compile_string(sexp.sexp, title, path, sexp.start, p_start.col + 1, line_reference, col_reference, @pkg)
+
+        # Trigger the highlight effect
+        range = Range(p_start, p_end)
+        utils.highlightRange(range, @editor, delay=250)
 
   editorDestroyedCallback: ->
     console.log "Closed!"
