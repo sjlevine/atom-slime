@@ -8,12 +8,13 @@ Current features of this package:
 - Integrated debugger (work in progress on stack trace)
 - Jumping to a method definition
 - Autocomplete suggestions based on your code
+- "Compile this function"
 - Function method argument order documentation
 
 Future features:
 - Interactive object inspection
 - Stack trace in debugger
-- "Compile this function" command
+- "Compile this file" command
 - "Who calls this function" command
 
 
@@ -56,13 +57,13 @@ Once you've followed the above steps, you should have:
 
 To start a REPL (an interactive terminal where you can interact with Lisp live), run the `Slime: Start` command from the command pallet. A REPL should then pop up. Note that if this is your first time using `atom-slime`, or you've updated your lisp process, you may get some warning messages about not being able to connect. This is normal; wait a minute or so, restart Atom, and try again and it should work. (This happens because your lisp is compiling the swank server and isn't ready before this package times out).
 
-With the REPL, you can type commands, see results, switch packages, and more. It's a great way to write Lisp code! A debugger will come up if an error occurs. You can also use the up & down arrows to scroll up through your past commands.
+With the REPL, you can type commands, see results, switch packages, and more. It's a great way to write Lisp code! A debugger will come up if an error occurs. You can also use the up & down arrows to scroll up through your past commands. type <kbd>Ctrl</kbd>+<kbd>C</kbd> <kbd>Ctrl</kbd>+<kbd>C</kbd> to interrupt lisp (if it's in an infinite loop, for example).
 
 If you've compiled your lisp code, placing the cursor over a method will cause a documentation string to appear at the bottom of the atom window, showing you the function arguments and their order.
 
 If you want to jump to where a certain method is defined, go to it and press <kbd>alt</kbd> + <kbd>.</kbd> or use the `Slime: Goto Definition` function in Atom. A little pop up window will come up and ask you which method you'd like to go to (since methods could be overloaded). Use the keyboard to go up and down, and press enter to jump to the definition you choose.
 
-
+To compile a single file in a Lisp file, place the cursor somewhere in that file and press <kbd>Ctrl</kbd>+<kbd>C</kbd>. The function should glow momentarily to indicate it's compiling, and from then on you can use it in the REPL.
 
 How it works
 --------------
