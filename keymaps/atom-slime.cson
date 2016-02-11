@@ -10,8 +10,10 @@
 
 'atom-text-editor[data-grammar~="lisp"]':
     'alt-.': 'slime:goto-definition'
-    'ctrl-c ctrl-c': 'slime:compile-function'
+    'alt-c': 'slime:compile-function'
 
 'atom-text-editor.slime-repl':
-    'ctrl-c ctrl-c': 'slime:interrupt-lisp'
+    'ctrl-c': 'slime:interrupt-lisp'
     'ctrl-=': 'slime:clear-repl'
+    'ctrl-shift-c': 'core:copy'
+    'ctrl-shift-v': 'core:paste'
