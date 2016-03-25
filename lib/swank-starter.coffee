@@ -18,6 +18,8 @@ class SwankStarter
     @process = new BufferedProcess({
       command: command,
       args: args,
+      options:
+        cwd: @get_cwd()
       stdout: @stdout_callback,
       stderr: @stderr_callback,
       exit: @exit_callback
@@ -43,6 +45,11 @@ class SwankStarter
 
   stderr_callback: (output) ->
     #console.log output
+
+  get_cwd: ->
+    ed = atom.workspace.getActiveTextEditor()?.getPath()
+    return atom.project.getPaths()[0] unless ed?
+    return path.dirname(ed)
 
   exit_callback: (code) ->
     console.log "Lisp process exited: #{code}"
