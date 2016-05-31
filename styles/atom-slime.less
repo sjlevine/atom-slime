@@ -118,3 +118,31 @@ bubble-multiline-message {
     border-radius: @component-border-radius;
   }
 }
+
+
+
+// REPL inspectable objects
+.slime-object-container {
+
+}
+
+
+// @object-color: @text-color-success;
+@object-color: #80ff80;
+@object-color-darker: darken(@object-color, 40%);
+@object-color-lighter: lighten(@object-color, 20%);
+.slime-object {
+  display: inline;
+  border-radius: 8px;
+  padding: 6px;
+  // background: linear-gradient(to bottom, @object-color-lighter 0%, @object-color 100%);
+  background: @object-color;
+  transition: background 0.2s;
+  border: 1px solid @object-color-darker;
+  color:  @object-color-darker;
+  user-select: text;
+}
+
+.slime-object:hover {
+  background: linear-gradient(to bottom, @object-color-lighter 0%, @object-color 100%);
+}

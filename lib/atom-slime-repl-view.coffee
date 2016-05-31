@@ -11,6 +11,8 @@ class REPLView
   # Keep track of command history, for use with the up/down arrows
   previousCommands: []
   cycleIndex: null
+  presentationMode: false
+  presentationText: ""
 
   constructor: (@swank) ->
     @prompt = @pkg + "> "
@@ -149,6 +151,14 @@ class REPLView
     @inputFromUser = true
 
 
+  presentationStart: () ->
+    @presentationText = ""
+    @presentationMode = true
+
+  presentationEnd: () ->
+    @presentationMode = false
+    @insertObject(@presentationText)
+
   # Retrieve the string of the user's input
   getUserInput: (text) ->
     lastLine = @editor.lineTextForBufferRow(@editor.getLastBufferRow())
@@ -183,6 +193,21 @@ class REPLView
     @editor.decorateMarker marker, {type:'line',class:'repl-line'}
 
 
+  insertObject: (text) ->
+    # We need a buffer character... otherwise, the marker we add will overlap
+    # the cursor position, which means when we insert text, the marker position
+    # will be updated and change, making the block move. We don't want that.
+    @appendText(" ", false)
+    pos = @editor.getCursorBufferPosition()
+    marker = @editor.markBufferPosition([pos.row, pos.column - 1])
+    elementContainer = document.createElement('div')
+    element = document.createElement('div')
+    elementContainer.appendChild(element)
+    element.textContent = text
+    element.classList.add('slime-object');
+    @editor.decorateMarker(marker, {type: 'block', item: elementContainer, position: 'after'})
+
+
   setupSwankSubscriptions: () ->
     # On changing package
     @swank.on 'new_package', (pkg) => @setPackage(pkg)
@@ -193,9 +218,11 @@ class REPLView
 
     # On printing presentation visualizations (like for results)
     @swank.on 'presentation_start', () =>
-      @appendPresentationMarker()
+      # @appendPresentationMarker()
+      @presentationStart()
     @swank.on 'presentation_end', () =>
-      @appendPresentationMarker()
+      # @appendPresentationMarker()
+      @presentationEnd()
 
     # Debug functions
     @swank.on 'debug_setup', (obj) => @createDebugTab(obj)
@@ -211,6 +238,12 @@ class REPLView
     # Print something to the REPL when the swank server says to.
     # However, we need to make sure we're not interfering with the cursor!
     msg = msg.replace(/\\\"/g, '"')
+
+    # TODO: edge case if cursor elsewhere while printing objects?
+    if @presentationMode
+      @presentationText += msg
+      return
+
     if @preventUserInput
       # A command is being run, no prompt is in the way - so directly print
       # anything received to the REPL
