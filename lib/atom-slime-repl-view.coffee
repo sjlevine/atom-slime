@@ -151,13 +151,13 @@ class REPLView
     @inputFromUser = true
 
 
-  presentationStart: () ->
+  presentationStart: (presentationID) ->
     @presentationText = ""
     @presentationMode = true
 
-  presentationEnd: () ->
+  presentationEnd: (presentationID) ->
     @presentationMode = false
-    @insertObject(@presentationText)
+    @insertObject(@presentationText, presentationID)
 
   # Retrieve the string of the user's input
   getUserInput: (text) ->
@@ -181,6 +181,9 @@ class REPLView
       promise.then =>
         @insertPrompt()
         @preventUserInput = false
+        setTimeout ( => @editor.scrollToCursorPosition()), 0
+
+
     # Stop the enter
     event.stopImmediatePropagation()
 
@@ -193,20 +196,46 @@ class REPLView
     @editor.decorateMarker marker, {type:'line',class:'repl-line'}
 
 
-  insertObject: (text) ->
+  insertObject: (text, pID) ->
     # We need a buffer character... otherwise, the marker we add will overlap
     # the cursor position, which means when we insert text, the marker position
     # will be updated and change, making the block move. We don't want that.
+    # console.log "Presentation ID:" + pID
     @appendText(" ", false)
     pos = @editor.getCursorBufferPosition()
     marker = @editor.markBufferPosition([pos.row, pos.column - 1])
+    # <button class='btn btn-info inline-block-tight'>Info</button>
     elementContainer = document.createElement('div')
-    element = document.createElement('div')
+    element = document.createElement('button')
     elementContainer.appendChild(element)
     element.textContent = text
-    element.classList.add('slime-object');
+    # element.classList.add('slime-object');
+    element.classList.add('btn')
+    # element.classList.add('btn-success')
+    element.classList.add('inline-block-tight')
+    element.setAttribute('data-swank-presentation-id', pID)
     @editor.decorateMarker(marker, {type: 'block', item: elementContainer, position: 'after'})
 
+    # Get the type, if we can!
+    if @swank.connected
+      promise = @swank.get_type_of_presentation_object(pID)
+      promise.then (result) => @colorizeObjectByType(element, result.children[1].source.replace(/\\\"/g, '').replace(/\"/g, ''))
+
+
+  colorizeObjectByType: (element, type_string) ->
+    if type_string == "string" or type_string == "character"
+      element.classList.add('btn-warning')
+    else if type_string == "number"
+      element.classList.add('btn-info')
+    else if type_string == "symbol"
+      element.classList.add('btn-primary')
+    else if type_string == 'list' or type_string == 'array' or type_string == 'hash-table'
+      element.classList.add('btn-success')
+    else if type_string == 'boolean'
+      element.classList.add('btn-error')
+    # console.log "Unknown:" + type_string
+    #else
+      # Nothing!
 
   setupSwankSubscriptions: () ->
     # On changing package
@@ -217,12 +246,12 @@ class REPLView
       @print_string_callback(msg)
 
     # On printing presentation visualizations (like for results)
-    @swank.on 'presentation_start', () =>
+    @swank.on 'presentation_start', (pID) =>
       # @appendPresentationMarker()
-      @presentationStart()
-    @swank.on 'presentation_end', () =>
+      @presentationStart(pID)
+    @swank.on 'presentation_end', (pID) =>
       # @appendPresentationMarker()
-      @presentationEnd()
+      @presentationEnd(pID)
 
     # Debug functions
     @swank.on 'debug_setup', (obj) => @createDebugTab(obj)
