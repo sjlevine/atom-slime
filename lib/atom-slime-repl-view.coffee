@@ -206,23 +206,33 @@ class REPLView
     marker = @editor.markBufferPosition([pos.row, pos.column - 1])
     # <button class='btn btn-info inline-block-tight'>Info</button>
     elementContainer = document.createElement('div')
-    element = document.createElement('button')
+    element = @createObjectButton(text, pID, false)
     elementContainer.appendChild(element)
+    element.addEventListener("click", ((e) => @objectClickCallback(element, pID)), false)
+    @editor.decorateMarker(marker, {type: 'block', item: elementContainer, position: 'after'})
+
+
+  createObjectButton: (text, pID, nth_type=false) ->
+    # Creates a button-like representation of an introspected object
+    # as an HTML object that is returned. nth_type is a boolean arg
+    # that is true if we must call the different swank function to get the
+    # nth type to get color / type information
+    element = document.createElement('button')
     element.textContent = text
     # element.classList.add('slime-object');
     element.classList.add('slime-object')
     element.classList.add('btn')
     # element.classList.add('btn-success')
     element.classList.add('inline-block-tight')
-
-    element.setAttribute('data-swank-presentation-id', pID)
-    element.addEventListener("click", ((e) => @objectClickCallback(element, pID)), false)
-    @editor.decorateMarker(marker, {type: 'block', item: elementContainer, position: 'after'})
-
+    element.setAttribute('data-swank-id', pID)
     # Get the type, if we can!
     if @swank.connected
-      promise = @swank.get_type_of_presentation_object(pID)
+      if not nth_type
+        promise = @swank.get_type_of_presentation_object(pID)
+      else
+        promise = @swank.get_type_of_inspection_nth_part(pID)
       promise.then (result) => @colorizeObjectByType(element, result.children[1].source.replace(/\\\"/g, '').replace(/\"/g, ''))
+    return element
 
 
   colorizeObjectByType: (element, type_string) ->
@@ -241,8 +251,6 @@ class REPLView
       # Nothing!
 
   objectClickCallback: (element, pID) ->
-    console.log "Clicked: " + pID
-
     # Introspect this object
     @openObjectIntrospection(element, pID)
 
@@ -251,16 +259,24 @@ class REPLView
     if @swank.connected
       promise = @swank.inspect_presentation(pID)
       promise.then (result) =>
-        console.log result
         title = result.children[1].source.replace(/\"/g, '')
         content = result.children[5].children[0].children
 
-        divText = title + "<br/>"
+        divContent = [{type: 'title', data: title}]
+
         for c in content
           if c.type == "string"
-            divText += c.source.replace(/\"/g, '').replace(/\n/g, '<br/>')
+            for m in c.source[1...-1].replace(/\\\\/g, '\\').replace(/\\"/g, '"').split(/(\n)/g)
+              if m == '\n'
+                divContent.push({type: 'newline', data: '\n'})
+              else
+                divContent.push({type: 'string', data: m}) if m != ''
+
           else if c.type == "list"
-            divText += "(!)"
+            console.log c
+            text = c.children[1].source[1...-1].replace(/\\\\/g, '\\').replace(/\\"/g, '"')
+            id = c.children[2].source
+            divContent.push({type: 'reference', text: text, id: id})
 
         # Set the text
         div = document.createElement('div')
@@ -285,7 +301,101 @@ class REPLView
         # element.classList.remove('btn-warning')
         # element.classList.remove('btn-error')
         # element.classList.remove('btn-primary')
-        div.innerHTML = divText
+        contents = @objectContentsToDivHTML(divContent)
+        console.log(contents)
+        for c in contents
+          div.appendChild(c)
+        # div.innerHTML = @objectContentsToDivHTML(divContent)
+
+
+  objectContentsToDivHTML: (divContent) ->
+    # First, reformat it to look prettier for Atom
+    # Divide into lines
+    lines = []
+    line = []
+    for m in divContent
+      if m.type == 'string'
+        line.push(m)
+      if m.type == 'reference'
+        line.push(m)
+      if m.type == 'newline'
+        lines.push(line)
+        line = []
+      if m.type == 'title'
+        lines.push(line)
+        line = []
+        lines.push([m])
+    lines.push(line)
+
+    # Now parse out tables
+    in_table = false
+    table_rows = []
+    lines_new = []
+    for line in lines
+      is_table_row = line.some( (x) => x.type == 'string' and x.data == ': ')
+      if is_table_row and in_table == false
+        in_table = true
+      else if is_table_row == false and in_table
+        lines_new.push([{type: 'table', rows: table_rows}])
+        table_rows = []
+        in_table = false
+      if is_table_row
+        sep_index = line.findIndex((x) => x.type == 'string' and x.data == ': ')
+        table_rows.push({left_column: line[0..sep_index-1], right_column: line[sep_index+1...]})
+      else
+        lines_new.push(line)
+
+    if in_table
+      lines_new.push([{type: 'table', rows: table_rows}])
+
+    lines = lines_new
+
+    contents = []
+    for line in lines
+      for m in line
+        contents.push(@formatIntrospectionObj(m))
+      contents.push(document.createElement('br'))
+    return contents
+
+
+  formatIntrospectionObj: (m) ->
+    # Recursive helper method
+    if m.type == 'title'
+      html_node = document.createElement('span')
+      h4 = document.createElement('h4')
+      h4.appendChild(document.createTextNode(m.data))
+      html_node.appendChild(h4)
+      html_node.appendChild(document.createElement('br'))
+
+    else if m.type == 'string'
+      html_node = document.createTextNode(m.data)
+
+    else if m.type == 'newline'
+      html_node = document.createElement('br')
+
+    else if m.type == 'reference'
+      html_node = @createObjectButton(m.text, m.id, true)
+
+    else if m.type == 'table'
+      html_node = document.createElement('table')
+      html_node.classList.add('table')
+      html_node.classList.add('table-hover')
+      html_node.classList.add('table-condensed')
+      tbody = document.createElement('tbody')
+      html_node.appendChild(tbody)
+      for row in m.rows
+        tr = document.createElement('tr')
+        tbody.appendChild(tr)
+        td = document.createElement('td')
+        tr.appendChild(td)
+        for c in row.left_column
+          td.appendChild(@formatIntrospectionObj(c))
+        td = document.createElement('td')
+        tr.appendChild(td)
+        for c in row.right_column
+          td.appendChild(@formatIntrospectionObj(c))
+
+    return html_node
 
 
   setupSwankSubscriptions: () ->
