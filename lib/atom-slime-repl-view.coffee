@@ -210,10 +210,13 @@ class REPLView
     elementContainer.appendChild(element)
     element.textContent = text
     # element.classList.add('slime-object');
+    element.classList.add('slime-object')
     element.classList.add('btn')
     # element.classList.add('btn-success')
     element.classList.add('inline-block-tight')
+
     element.setAttribute('data-swank-presentation-id', pID)
+    element.addEventListener("click", ((e) => @objectClickCallback(element, pID)), false)
     @editor.decorateMarker(marker, {type: 'block', item: elementContainer, position: 'after'})
 
     # Get the type, if we can!
@@ -236,6 +239,54 @@ class REPLView
     # console.log "Unknown:" + type_string
     #else
       # Nothing!
+
+  objectClickCallback: (element, pID) ->
+    console.log "Clicked: " + pID
+
+    # Introspect this object
+    @openObjectIntrospection(element, pID)
+
+
+  openObjectIntrospection: (element, pID) ->
+    if @swank.connected
+      promise = @swank.inspect_presentation(pID)
+      promise.then (result) =>
+        console.log result
+        title = result.children[1].source.replace(/\"/g, '')
+        content = result.children[5].children[0].children
+
+        divText = title + "<br/>"
+        for c in content
+          if c.type == "string"
+            divText += c.source.replace(/\"/g, '').replace(/\n/g, '<br/>')
+          else if c.type == "list"
+            divText += "(!)"
+
+        # Set the text
+        div = document.createElement('div')
+
+        # console.log $(element).css('border-radius')
+        # console.log $(element).css('background')
+        # console.log $(element).css('border')
+
+        $(div).css('border-radius', $(element).css('border-radius'))
+        # $(div).css('border', $(element).css('border'))
+        # $(div).css('border', '1px')
+        $(div).css('padding', $(element).css('padding'))
+        $(div).css('margin', $(element).css('margin'))
+        div.classList.add('slime-object-introspected')
+
+        parent = $(element).parent()
+        $(element).css('display', 'none')
+        $(parent).append(div);
+
+        # element.classList.remove('btn-info')
+        # element.classList.remove('btn-success')
+        # element.classList.remove('btn-warning')
+        # element.classList.remove('btn-error')
+        # element.classList.remove('btn-primary')
+        div.innerHTML = divText
+
 
   setupSwankSubscriptions: () ->
     # On changing package
