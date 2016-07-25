@@ -81,7 +81,6 @@ class REPLView
     @subs.add atom.commands.add @editorElement, 'core:undo': (event) => event.stopImmediatePropagation()
     @subs.add atom.commands.add @editorElement, 'core:redo': (event) => event.stopImmediatePropagation()
 
-
     @subs.add atom.commands.add @editorElement, 'editor:newline': (event) => @handleEnter(event)
     @subs.add atom.commands.add @editorElement, 'editor:newline-below': (event) => @handleEnter(event)
 
@@ -112,9 +111,15 @@ class REPLView
       if @swank.connected
         @swank.interrupt()
 
-
     @subs.add @editor.onDidDestroy =>
       @destroy()
+
+    # Prevent the "do you want to save?" dialog from popping up when the REPL window is closed.
+    # Unfortunately, as per https://discuss.atom.io/t/how-to-disable-do-you-want-to-save-dialog/31373
+    # there is no built-in API to do this. As such, we must override an API method to trick
+    # Atom into thinking it isn't ever modified.
+    @editor.isModified = (() => false)
+
 
     # Hide the gutter(s)
     # g.hide() for g in @editor.getGutters()
