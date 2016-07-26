@@ -4,7 +4,7 @@ module.exports =
   class StatusView extends View
     @content:->
       @div class:'inline-block', =>
-        @div outlet:'main', ''
+        @div outlet:'main', 'Slime not connected.'
 
     message: (msg) =>
       @main.html(msg)
