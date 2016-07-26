@@ -21,6 +21,19 @@ atom-text-editor::shadow {
 }
 
 
+// Status view
+status-bar .slime-keyword-highlight {
+  background-color: @inset-panel-background-color;
+  font-weight: bold;
+  border-radius: @component-border-radius;
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  margin-left: -1px;
+  margin-right: -1px;
+  border: 1px solid @inset-panel-border-color;
+}
 
 
 // TODO - bubble stuff, change
@@ -117,4 +130,30 @@ bubble-multiline-message {
     background: @text-color-highlight; // @background-color-info;
     border-radius: @component-border-radius;
   }
+}
+
+
+
+// REPL inspectable objects
+.slime-object-container {
+
+}
+
+
+.slime-object {
+
+
+}
+
+.slime-object-introspected {
+  border: solid 1px @base-border-color;
+  text-align: left;
+  line-height: 1.5em;
+  display: inline-block;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.slime-object-introspected h4 {
+    border-bottom: solid 1px @base-border-color;
 }
