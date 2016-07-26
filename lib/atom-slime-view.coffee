@@ -7,6 +7,9 @@ class AtomSlimeView
   constructor: (serializedState, @swank) ->
     # Start a status view
     @statusView = new StatusView()
+    # Close any currently-opened REPL's that are leftover in the editor from last time
+    process.nextTick =>
+      @closeAllREPLs()
 
   # Returns an object that can be retrieved when package is activated
   serialize: ->
@@ -31,3 +34,9 @@ class AtomSlimeView
 
   setStatusBar: (@statusBar) ->
     @statusView.attach(@statusBar)
+
+  closeAllREPLs: ->
+    editors = atom.workspace.getTextEditors()
+    for editor in editors
+      if editor.getPath() == '/tmp/repl.lisp-repl'
+        editor.destroy()
