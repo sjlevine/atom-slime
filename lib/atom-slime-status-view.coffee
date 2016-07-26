@@ -1,10 +1,14 @@
-{View} = require('atom-space-pen-views')
+{$} = require('atom-space-pen-views')
 
 module.exports =
-  class StatusView extends View
-    @content:->
-      @div class:'inline-block', =>
-        @div outlet:'main', 'Slime not connected.'
+  class StatusView
+
+    constructor: ->
+      @content = $('<div>').addClass('inline-block')
+      @content.css({'max-width':'100vw'}) # Prevent from getting cut off
+      @main = $('<div>').text('Slime not connected.')
+      @content.append(@main)
+
 
     message: (msg) =>
       @main.html(msg)
@@ -26,7 +30,7 @@ module.exports =
       entries = ({classes:[], text:field} for field in fields when field != "===>" and field != "<===")
       for entry in entries
         if entry.text == currentSymbol
-          entry.classes.push "highlight"
+          entry.classes.push "slime-keyword-highlight"
 
         if entry.text.charAt(0) == "&"
           entry.classes.push "constant"
@@ -34,13 +38,13 @@ module.exports =
       entries[0].classes.push "entity"
       entries[0].classes.push "name"
       entries[0].classes.push "function"
-      result = '(' + (('<span class="' + entry.classes.join(' ') + '">' + entry.text + '</span>' for entry in entries).join ' ') + ')'
+      result = '<div style="font-family: monospace;">(' + (('<span class="' + entry.classes.join(' ') + '">' + entry.text + '</span>' for entry in entries).join ' ') + ')</div>'
       # Otherwise, treat it and parse it
       @main.html(result)
 
     attach: (@statusBar) ->
-      @statusBar.addLeftTile(item: this, priority: 100)
+      @statusBar.addLeftTile(item: @content[0], priority: 100)
 
     # Tear down any state and detach
     destroy: ->
-      @element.remove()
+      @content.remove()
