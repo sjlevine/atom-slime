@@ -52,12 +52,12 @@ module.exports = AtomSlime =
 
     # Keep track of all Lisp editors
     @subs.add atom.workspace.observeTextEditors (editor) =>
-      if editor.getGrammar().name.search /Lisp/
+      if editor.getGrammar().name.match /Lisp/i
         ase = new AtomSlimeEditor(editor, @views.statusView, @swank)
         @ases.add ase
       else
         editor.onDidChangeGrammar =>
-          if editor.getGrammar().name.search /Lisp/
+          if editor.getGrammar().name.match /Lisp/i
             ase = new AtomSlimeEditor(editor, @views.statusView, @swank)
             @ases.add ase
 
