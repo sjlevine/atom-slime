@@ -12,6 +12,11 @@
     'alt-.': 'slime:goto-definition'
     'alt-c': 'slime:compile-function'
 
+'atom-text-editor':
+    'ctrl-cmd-.': 'slime:goto-definition'
+    'ctrl-cmd-c': 'slime:compile-function'
+
+
 'atom-text-editor.slime-repl':
     'ctrl-c': 'slime:interrupt-lisp'
     'ctrl-=': 'slime:clear-repl'
