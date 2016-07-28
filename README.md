@@ -2,6 +2,8 @@
 
 Integrates SLIME (the Superior Lisp Interaction Mode for Emacs) with Atom! This package allows you to interactively develop Common Lisp code, helping turn Atom into a full-featured Lisp IDE.
 
+![screenshot](https://raw.githubusercontent.com/sjlevine/atom-slime/master/media/atom-slime-screenshot.png)
+
 Current features of this package:
 
 - Read-eval-print-loop (REPL) for interactive Lisp development
