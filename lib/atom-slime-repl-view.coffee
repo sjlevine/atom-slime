@@ -136,6 +136,10 @@ class REPLView
 
 
   clearREPL: () ->
+    # Destroy any markers
+    for marker in @editor.getMarkers()
+      marker.destroy()
+    # Delete any text, and move to end
     @editor.setText @prompt
     @editor.moveToEndOfLine()
 
@@ -217,7 +221,7 @@ class REPLView
     @editor.decorateMarker(marker, {type: 'block', item: elementContainer, position: 'after'})
 
 
-  createObjectButton: (text, pID, nth_type=false) ->
+  createObjectButton: (text, pID, nth_type=false, colorize=true) ->
     # Creates a button-like representation of an introspected object
     # as an HTML object that is returned. nth_type is a boolean arg
     # that is true if we must call the different swank function to get the
@@ -231,7 +235,7 @@ class REPLView
     element.classList.add('inline-block-tight')
     element.setAttribute('data-swank-id', pID)
     # Get the type, if we can!
-    if @swank.connected
+    if colorize and @swank.connected
       if not nth_type
         promise = @swank.get_type_of_presentation_object(pID)
       else
@@ -278,10 +282,21 @@ class REPLView
                 divContent.push({type: 'string', data: m}) if m != ''
 
           else if c.type == "list"
-            console.log c
             text = c.children[1].source[1...-1].replace(/\\\\/g, '\\').replace(/\\"/g, '"')
             id = c.children[2].source
-            divContent.push({type: 'reference', text: text, id: id})
+            raw_type = c.children[0].source.toLowerCase()
+            if raw_type == ':value'
+              type = 'reference'
+              # If it's a reference, and it begins with a reference, remove it.
+              match = text.match(/^@[\d]+=(.*)$/)
+              if match
+                text = match[1] # Only the matching part!
+            else if raw_type == ':action'
+              type = 'action'
+            else
+              type = 'unknown'
+
+            divContent.push({type: type, text: text, id: id})
 
         # Set the text
         div = document.createElement('div')
@@ -321,7 +336,7 @@ class REPLView
     for m in divContent
       if m.type == 'string'
         line.push(m)
-      if m.type == 'reference'
+      if m.type == 'reference' or m.type == 'action'
         line.push(m)
       if m.type == 'newline'
         lines.push(line)
@@ -378,8 +393,9 @@ class REPLView
     else if m.type == 'newline'
       html_node = document.createElement('br')
 
-    else if m.type == 'reference'
-      html_node = @createObjectButton(m.text, m.id, true)
+    else if m.type == 'reference' or m.type == 'action'
+      colorize =  (m.type == 'reference')
+      html_node = @createObjectButton(m.text, m.id, true, colorize=colorize)
 
     else if m.type == 'table'
       html_node = document.createElement('table')
