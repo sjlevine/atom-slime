@@ -21,36 +21,42 @@ module.exports = AtomSlime =
       description: 'Path to where SLIME resides on your computer.'
       type: 'string'
       default: '/home/username/Desktop/slime'
+      order: 3
 
     lispName:
       title: 'Lisp Process'
       description: 'Name of Lisp to run'
       type: 'string'
       default: 'sbcl'
+      order: 2
 
     autoStart:
       title: 'Start lisp when Atom opens'
       description: 'When checked, a Lisp REPL will automatically open every time you open atom.'
       type: 'boolean'
       default: false
+      order: 1
 
-    disableSwankArgs:
-      title: 'Disable the swank arguments passed to Lisp'
-      description: 'When checked, the swank / slime path will not be included when starting Lisp (for advanced users using docker)'
-      type: 'boolean'
-      default: false
-
-    showSwankDebug:
-      title: 'Show the swank messages in the JavaScript console'
-      description: 'When enabled, every message coming from the swank server will be shown in the JavaScript console.'
-      type: 'boolean'
-      default: false
-
-    connectionAttempts:
-      title: 'Number of connection attempts to make with the swank server (0.2s per attempt)'
-      description: 'If Lisp takes a while to load, then increasing the number of attempts may help (for advanced users using docker)'
-      type: 'integer'
-      default: 5
+    advancedSettings:
+      title: 'Advanced Settings'
+      type: 'object'
+      order: 4
+      properties:
+        disableSwankArgs:
+          title: 'Disable the swank arguments passed to Lisp'
+          description: 'When checked, the swank / slime path will not be included when starting Lisp (for advanced users using docker)'
+          type: 'boolean'
+          default: false
+        showSwankDebug:
+          title: 'Show the swank messages in the JavaScript console'
+          description: 'When enabled, every message coming from the swank server will be shown in the JavaScript console.'
+          type: 'boolean'
+          default: false
+        connectionAttempts:
+          title: 'Number of connection attempts to make with the swank server (0.2s per attempt)'
+          description: 'If Lisp takes a while to load, then increasing the number of attempts may help (for advanced users using docker)'
+          type: 'integer'
+          default: 5
 
 
   activate: (state) ->
@@ -104,7 +110,7 @@ module.exports = AtomSlime =
     @tryToConnect 0
 
   tryToConnect: (i) ->
-    if i > atom.config.get 'atom-slime.connectionAttempts'
+    if i > atom.config.get 'atom-slime.advancedSettings.connectionAttempts'
       atom.notifications.addWarning("Couldn't connect to Lisp! Did you start a Lisp swank server?\n\nIf this is your first time running `atom-slime`, this is normal. Try running `slime:connect` in a minute or so once it's finished compiling.")
       return false
     promise = @swank.connect()
