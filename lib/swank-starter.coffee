@@ -15,7 +15,10 @@ class SwankStarter
       return false
     command = @lisp
     args = []
-    args.push '--load' unless command.match(/clisp/)  # CLISP does not have a --load option
+    if not command.match(/clisp|lw/)
+      args.push '--load'
+    else
+      args.push '-load' if command.match(/lw/)
     args.push @swank_script
     @process = new BufferedProcess({
       command: command,
