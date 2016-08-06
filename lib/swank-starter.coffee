@@ -15,7 +15,7 @@ class SwankStarter
       return false
     command = @lisp
     args = []
-    if atom.config.get 'atom-slime.advancedSettings.disableSwankArgs'
+    if ! atom.config.get 'atom-slime.advancedSettings.disableSwankArgs'
       args.push '--load' unless command.match(/clisp/)  # CLISP does not have a --load option
       args.push @swank_script
     @process = new BufferedProcess({
