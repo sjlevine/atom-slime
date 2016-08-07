@@ -35,6 +35,11 @@ module.exports = AtomSlime =
       type: 'boolean'
       default: false
 
+    initFile:
+      title: 'Init File'
+      description: 'Load a specific file when the Lisp REPL first opens'
+      type: 'string'
+      default: ''
 
   activate: (state) ->
     # Setup a swank client instance
@@ -99,7 +104,9 @@ module.exports = AtomSlime =
       atom.notifications.addSuccess('Connected to Lisp!', detail:'Code away!')
       @views.statusView.message("Slime connected!")
       @views.showRepl()
-
+      initfile = atom.config.get('atom-slime.initFile')
+      if initfile
+        @swank.eval('(load "' + initfile + '")')
 
   swankDisconnect: () ->
     @swank.quit()
