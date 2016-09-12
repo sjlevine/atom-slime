@@ -42,11 +42,6 @@ module.exports = AtomSlime =
       type: 'object'
       order: 4
       properties:
-        disableSwankArgs:
-          title: 'Disable the swank arguments passed to Lisp'
-          description: 'When checked, the swank / slime path will not be included when starting Lisp (for advanced users using docker)'
-          type: 'boolean'
-          default: false
         showSwankDebug:
           title: 'Show the swank messages in the JavaScript console'
           description: 'When enabled, every message coming from the swank server will be shown in the JavaScript console.'
