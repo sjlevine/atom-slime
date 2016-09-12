@@ -1,7 +1,7 @@
 {
   "name": "atom-slime",
   "main": "./lib/atom-slime",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "SLIME plugin for interacting with Lisp!",
   "keywords": [
     "lisp",
