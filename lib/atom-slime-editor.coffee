@@ -15,9 +15,9 @@ class AtomSlimeEditor
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @editorElement = atom.views.getView(@editor)
     @subs = new CompositeDisposable
-    @subs.add editor.onDidStopChanging => @stoppedEditingCallback()
-    @subs.add editor.onDidChangeCursorPosition => @cursorMovedCallback()
-    @subs.add editor.onDidDestroy => @editorDestroyedCallback()
+    @subs.add @editor.onDidStopChanging => @stoppedEditingCallback()
+    @subs.add @editor.onDidChangeCursorPosition => @cursorMovedCallback()
+    @subs.add @editor.onDidDestroy => @editorDestroyedCallback()
 
     # TODO - make this a context menu item... not a command that only works through
     # command pallette in that window...
