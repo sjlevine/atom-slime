@@ -15,6 +15,7 @@ class SwankStarter
       return false
     command = @lisp
     args = []
+    args.push 'run' if command.match(/ros/)
     if not command.match(/clisp|lw/)
       args.push '--load'
     else
