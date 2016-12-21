@@ -25,6 +25,12 @@ class AtomSlimeEditor
       @openDefinition()
     @subs.add atom.commands.add @editorElement, 'slime:compile-function': =>
       @compileFunction()
+    @subs.add atom.commands.add @editorElement, 'slime:compile-buffer': =>
+      @compileBuffer()
+    @subs.add atom.commands.add @editorElement, 'slime:macroexpand-1': =>
+      @macroexpand1()
+    @subs.add atom.commands.add @editorElement, 'slime:macroexpand-all': =>
+      @macroexpandAll()
 
     # Pretend we just finished editing, so that way things get up to date
     @stoppedEditingCallback()
@@ -126,6 +132,26 @@ class AtomSlimeEditor
         # Trigger the highlight effect
         range = Range(p_start, p_end)
         utils.highlightRange(range, @editor, delay=250)
+
+  compileBuffer: ->
+    # Compile the entire buffer
+    if @swank.connected
+      text = @editor.getText();
+      @swank.compile_string(text, @editor.getTitle(), @editor.getPath(), 0, 0, @pkg)
+      utils.highlightRange(Range([0, 0], @convertIndexToPoint(text.length - 1)), @editor, delay=250)
+
+  macroexpand: (fun) ->
+    if @swank.connected
+      sexp = @getCurrentSexp()
+      if sexp
+        console.log(sexp.sexp);
+        @swank.eval("(pprint (" + fun + "'" + sexp.sexp + "))")
+
+  macroexpand1: ->
+    @macroexpand("macroexpand-1")
+
+  macroexpandAll: ->
+    @macroexpand("macroexpand")
 
   editorDestroyedCallback: ->
     console.log "Closed!"
