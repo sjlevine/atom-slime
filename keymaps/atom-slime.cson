@@ -11,10 +11,12 @@
 'atom-text-editor[data-grammar~="lisp"]':
     'alt-.': 'slime:goto-definition'
     'alt-c': 'slime:compile-function'
+    'alt-k': 'slime:compile-buffer'
 
 'atom-text-editor':
     'ctrl-cmd-.': 'slime:goto-definition'
     'ctrl-cmd-c': 'slime:compile-function'
+    'ctrl-cmd-k': 'slime:compile-buffer'
 
 
 'atom-text-editor.slime-repl':
