@@ -15,7 +15,11 @@ class SwankStarter
       return false
     command = @lisp
     args = []
-    args.push '--load' unless command.match(/clisp/)  # CLISP does not have a --load option
+    args.push 'run' if command.match(/ros/)
+    if not command.match(/clisp|lw/)
+      args.push '--load'
+    else
+      args.push '-load' if command.match(/lw/)
     args.push @swank_script
     @process = new BufferedProcess({
       command: command,
@@ -43,10 +47,12 @@ class SwankStarter
       return false
 
   stdout_callback: (output) ->
-    #console.log output
+    if atom.config.get 'atom-slime.advancedSettings.showSwankDebug'
+      console.log output
 
   stderr_callback: (output) ->
-    #console.log output
+    if atom.config.get 'atom-slime.advancedSettings.showSwankDebug'
+      console.log output
 
   get_cwd: ->
     ed = atom.workspace.getActiveTextEditor()?.getPath()

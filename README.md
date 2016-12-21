@@ -2,6 +2,8 @@
 
 Integrates SLIME (the Superior Lisp Interaction Mode for Emacs) with Atom! This package allows you to interactively develop Common Lisp code, helping turn Atom into a full-featured Lisp IDE.
 
+![screenshot](https://raw.githubusercontent.com/sjlevine/atom-slime/master/media/atom-slime-screenshot.png)
+
 Current features of this package:
 
 - Read-eval-print-loop (REPL) for interactive Lisp development
@@ -61,9 +63,9 @@ With the REPL, you can type commands, see results, switch packages, and more. It
 
 If you've compiled your lisp code, placing the cursor over a method will cause a documentation string to appear at the bottom of the atom window, showing you the function arguments and their order.
 
-If you want to jump to where a certain method is defined, go to it and press <kbd>alt</kbd> + <kbd>.</kbd> or use the `Slime: Goto Definition` function in Atom. A little pop up window will come up and ask you which method you'd like to go to (since methods could be overloaded). Use the keyboard to go up and down, and press enter to jump to the definition you choose.
+If you want to jump to where a certain method is defined, go to it and press <kbd>alt</kbd> + <kbd>.</kbd> (Mac: <kbd>ctrl</kbd> + <kbd>cmd</kbd> + <kbd>.</kbd>)or use the `Slime: Goto Definition` function in Atom. A little pop up window will come up and ask you which method you'd like to go to (since methods could be overloaded). Use the keyboard to go up and down, and press enter to jump to the definition you choose.
 
-To compile a single file in a Lisp file, place the cursor somewhere in that file and press <kbd>alt</kbd>+<kbd>C</kbd>. The function should glow momentarily to indicate it's compiling, and from then on you can use it in the REPL.
+To compile a single method in a Lisp file, place the cursor somewhere in that file and press <kbd>alt</kbd>+<kbd>c</kbd> (Mac: <kbd>ctrl</kbd> + <kbd>cmd</kbd> + <kbd>c</kbd>). The function should glow momentarily to indicate it's compiling, and from then on you can use it in the REPL.
 
 How it works
 --------------

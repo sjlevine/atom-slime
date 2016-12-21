@@ -30,7 +30,7 @@ class REPLView
     @editor = @replPane = null
     editors = atom.workspace.getTextEditors()
     for editor in editors
-      if editor.getPath() == '/tmp/repl.lisp-repl'
+      if editor.getTitle() == 'repl.lisp-repl'
         # We found the editor! Now search for the pane it's in.
         allPanes = atom.workspace.getPanes()
         for pane in allPanes

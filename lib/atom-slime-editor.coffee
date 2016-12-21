@@ -15,9 +15,9 @@ class AtomSlimeEditor
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @editorElement = atom.views.getView(@editor)
     @subs = new CompositeDisposable
-    @subs.add editor.onDidStopChanging => @stoppedEditingCallback()
-    @subs.add editor.onDidChangeCursorPosition => @cursorMovedCallback()
-    @subs.add editor.onDidDestroy => @editorDestroyedCallback()
+    @subs.add @editor.onDidStopChanging => @stoppedEditingCallback()
+    @subs.add @editor.onDidChangeCursorPosition => @cursorMovedCallback()
+    @subs.add @editor.onDidDestroy => @editorDestroyedCallback()
 
     # TODO - make this a context menu item... not a command that only works through
     # command pallette in that window...
@@ -25,6 +25,10 @@ class AtomSlimeEditor
       @openDefinition()
     @subs.add atom.commands.add @editorElement, 'slime:compile-function': =>
       @compileFunction()
+    @subs.add atom.commands.add @editorElement, 'slime:macroexpand-1': =>
+      @macroexpand1()
+    @subs.add atom.commands.add @editorElement, 'slime:macroexpand-all': =>
+      @macroexpandAll()
 
     # Pretend we just finished editing, so that way things get up to date
     @stoppedEditingCallback()
@@ -126,6 +130,22 @@ class AtomSlimeEditor
         # Trigger the highlight effect
         range = Range(p_start, p_end)
         utils.highlightRange(range, @editor, delay=250)
+
+  macroexpand: (fun) ->
+    if @swank.connected
+      sexp = @getCurrentSexp()
+      if sexp
+        console.log(sexp.sexp);
+        @swank.eval("(pprint (" + fun + "'" + sexp.sexp + "))")
+
+
+  macroexpand1: ->
+    @macroexpand("macroexpand-1")
+
+
+  macroexpandAll: ->
+    @macroexpand("macroexpand")
+
 
   editorDestroyedCallback: ->
     console.log "Closed!"
