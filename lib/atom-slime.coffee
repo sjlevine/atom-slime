@@ -67,6 +67,7 @@ module.exports = AtomSlime =
     @subs.add atom.commands.add 'atom-workspace', 'slime:connect': => @swankConnect()
     @subs.add atom.commands.add 'atom-workspace', 'slime:disconnect': => @swankDisconnect()
     @subs.add atom.commands.add 'atom-workspace', 'slime:restart': => @swankRestart()
+    @subs.add atom.commands.add 'atom-workspace', 'slime:profile': => @profileStart()
 
     # Keep track of all Lisp editors
     @subs.add atom.workspace.observeTextEditors (editor) =>
@@ -103,6 +104,12 @@ module.exports = AtomSlime =
   # Connect the to a running swank client
   swankConnect: () ->
     @tryToConnect 0
+
+
+  # Start up the profile view
+  profileStart: () ->
+    @views.repl.createProfileTab()
+    @views.repl.showProfileTab()
 
   tryToConnect: (i) ->
     if i > atom.config.get 'atom-slime.advancedSettings.connectionAttempts'

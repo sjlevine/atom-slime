@@ -1,21 +1,25 @@
 # See https://atom.io/docs/latest/hacking-atom-package-word-count#menus for more details
 'menu': [
   {
-    'label': 'Packages'
+    'label': 'Packages',
     'submenu': [
-      'label': 'Slime'
+      'label': 'Slime',
       'submenu': [
         {
-          'label': 'Start'
+          'label': 'Start',
           'command': 'slime:start'
         },
         {
-          'label': 'Disconnect'
+          'label': 'Disconnect',
           'command': 'slime:disconnect'
         },
         {
-          'label': 'Restart'
+          'label': 'Restart',
           'command': 'slime:restart'
+        },
+        {
+          'label': 'Profile',
+          'command': 'slime:profile'
         }
       ]
     ]
