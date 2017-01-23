@@ -213,6 +213,13 @@ class REPLView
       # TODO - keep track of different levels
       @closeDebugTab()
 
+    # Profile functions
+    @swank.on 'profile_toggle_function', (obj) =>
+      atom.notifications.addSuccess('Successful Swank callback!', detail:'profile_toggle_function')
+
+    @swank.on 'profile_unprofile_all', (obj) =>
+      atom.notifications.addSuccess('Successful Swank callback!', detail:'unprofile_all')
+
 
   print_string_callback: (msg) ->
     # Print something to the REPL when the swank server says to.
