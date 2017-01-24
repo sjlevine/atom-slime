@@ -218,7 +218,7 @@ class REPLView
       atom.notifications.addSuccess('Successful Swank callback!', detail:'profile_toggle_function')
 
     @swank.on 'profile_unprofile_all', (obj) =>
-      atom.notifications.addSuccess('Successful Swank callback!', detail:'unprofile_all')
+      atom.notifications.addSuccess(obj)
 
 
   print_string_callback: (msg) ->

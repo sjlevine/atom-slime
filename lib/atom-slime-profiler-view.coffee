@@ -35,7 +35,6 @@ class ProfilerView extends ScrollView
     return
 
   unprofile_click_handler: (event) ->
-    atom.notifications.addSuccess('Unprofiling all functions', detail:'Attempting to unprofile all functions...')
     @swank.profile_invoke_unprofile_all()
 
   report_click_handler: (event) ->
