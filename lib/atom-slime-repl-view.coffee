@@ -220,6 +220,9 @@ class REPLView
     @swank.on 'profile_unprofile_all', (obj) =>
       atom.notifications.addSuccess(obj)
 
+    @swank.on 'profile_reset', (obj) =>
+      atom.notifications.addSuccess(obj)
+
 
   print_string_callback: (msg) ->
     # Print something to the REPL when the swank server says to.
