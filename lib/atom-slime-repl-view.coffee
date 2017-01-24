@@ -214,8 +214,8 @@ class REPLView
       @closeDebugTab()
 
     # Profile functions
-    @swank.on 'profile_toggle_function', (obj) =>
-      atom.notifications.addSuccess('Successful Swank callback!', detail:'profile_toggle_function')
+    @swank.on 'profile_function_toggled', (obj) =>
+      atom.notifications.addSuccess(obj)
 
     @swank.on 'profile_unprofile_all', (obj) =>
       atom.notifications.addSuccess(obj)

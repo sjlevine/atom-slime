@@ -7,10 +7,10 @@ class ProfilerView extends ScrollView
     @div outlet:"main", class:"atom-slime-profiler padded", =>
       @h1 outlet:"profiler-toggle-func-title", =>
           @text "Toggle profiling of a function"
-      @input outlet:"profiler-function-input", class:"input-text", type:"text", placeholder:"<function name>"
+      @input id:"profiler-function-input", outlet:"profiler-function-input", class:"input-text", type:"text", placeholder:"Input <function name>, then hit enter"
       @h1 outlet:"profiler-package-title", =>
           @text "Profile all functions in a package"
-      @input outlet:"profiler-package-input", class:"input-text", type:"text", placeholder:"<package name>"
+      @input id:"profiler-package-input", outlet:"profiler-package-input", class:"input-text", type:"text", placeholder:"Input <package name>, then hit enter"
       @h1 outlet:"commands-title", =>
           @text "Profiler Commands"
       @div class:"select-list", =>
@@ -26,6 +26,8 @@ class ProfilerView extends ScrollView
             @text "Reset the profiler data"
 
   setup: (@swank) ->
+    this.find('#profiler-function-input').on 'keydown', (event) =>
+      @profile_function_click_handler event
     this.find('#profiler-unprofile-button').on 'click', (event) =>
       @unprofile_click_handler event
     this.find('#profiler-report-button').on 'click', (event) =>
@@ -42,6 +44,10 @@ class ProfilerView extends ScrollView
 
   reset_click_handler: (event) ->
     @swank.profile_invoke_reset()
+
+  profile_function_click_handler: (event) ->
+    if event.which is 13
+      @swank.profile_invoke_toggle_function(this.find('#profiler-function-input').val())
 
 
   getTitle: -> "Profiler"
