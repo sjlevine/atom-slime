@@ -214,14 +214,8 @@ class REPLView
       @closeDebugTab()
 
     # Profile functions
-    @swank.on 'profile_function_toggled', (obj) =>
-      atom.notifications.addSuccess(obj)
-
-    @swank.on 'profile_unprofile_all', (obj) =>
-      atom.notifications.addSuccess(obj)
-
-    @swank.on 'profile_reset', (obj) =>
-      atom.notifications.addSuccess(obj)
+    @swank.on 'profile_command_complete', (msg) =>
+      atom.notifications.addSuccess(msg)
 
 
   print_string_callback: (msg) ->

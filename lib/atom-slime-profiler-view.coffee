@@ -40,7 +40,7 @@ class ProfilerView extends ScrollView
     @swank.profile_invoke_unprofile_all()
 
   report_click_handler: (event) ->
-    atom.notifications.addSuccess('Showing profiler report', detail:'Coming soon...')
+    @swank.profile_invoke_report()
 
   reset_click_handler: (event) ->
     @swank.profile_invoke_reset()
