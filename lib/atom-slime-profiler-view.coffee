@@ -8,7 +8,7 @@ class ProfilerView
     @swank = sw
     @enabled = false
     @content = $('<div>').addClass('inline-block')
-    @content.css({'max-width':'100vw', 'margin-left':'32px'}) # Prevent from getting cut off
+    @content.css({'max-width':'100vw', 'margin-left':'13px'}) # Prevent from getting cut off
     @main = $('<div>')
     @content.append(@main)
     console.log(@swank)
@@ -59,7 +59,7 @@ class ProfilerView
     func_dialog.attach(((sw) -> ((pack) -> sw.profile_invoke_toggle_package(pack)))(@swank))
 
   attach: (@statusBar) ->
-    @statusBar.addLeftTile(item: @content[0], priority: 1000)
+    @statusBar.addLeftTile(item: @content[0], priority: 9)
 
   destroy: ->
     @content.remove()
