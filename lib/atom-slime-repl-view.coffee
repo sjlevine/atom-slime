@@ -1,7 +1,6 @@
 {CompositeDisposable, Point, Range} = require 'atom'
 {$, TextEditorView, View} = require 'atom-space-pen-views'
 DebuggerView = require './atom-slime-debugger-view'
-ProfilerView = require './atom-slime-profiler-view'
 
 module.exports =
 class REPLView
@@ -21,7 +20,6 @@ class REPLView
     @setupSwankSubscriptions()
     @createRepl()
     @setupDebugger()
-    @setupProfiler()
 
 
   # Make a new pane / REPL text editor, or find one
@@ -282,31 +280,6 @@ class REPLView
     @editor.setTextInBufferRange(range, newtext, undo:'skip')
 
 
-  setupProfiler: () ->
-    process.nextTick =>
-    @subs.add atom.workspace.addOpener (filePath) =>
-        if filePath == 'slime://profile'
-          return @profv
-    @subs.add @replPane.onWillDestroyItem (e) =>
-      if e.item == @profv
-        return
-        #@swank.reset_profiling()
-
-
-  createProfileTab: (obj) ->
-    @profv = new ProfilerView
-    @profv.setup(@swank, obj)
-
-
-  showProfileTab: () ->
-    @replPane.activate()
-    atom.workspace.open('slime://profile')
-
-
-  closeProfileTab: () ->
-    @replPane.destroyItem(@profv)
-
-
   setupDebugger: () ->
     process.nextTick =>
     @subs.add atom.workspace.addOpener (filePath) =>
@@ -341,6 +314,5 @@ class REPLView
   destroy: ->
     if @swank.connected
       @closeDebugTab()
-      @closeProfileTab()
       @subs.dispose()
       @swank.quit()

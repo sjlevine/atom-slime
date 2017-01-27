@@ -108,8 +108,7 @@ module.exports = AtomSlime =
 
   # Start up the profile view
   profileStart: () ->
-    @views.repl.createProfileTab()
-    @views.repl.showProfileTab()
+    @views.profileView.toggle()
 
   tryToConnect: (i) ->
     if i > atom.config.get 'atom-slime.advancedSettings.connectionAttempts'

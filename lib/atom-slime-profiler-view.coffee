@@ -1,54 +1,68 @@
 {CompositeDisposable} = require 'atom'
-{$, $$, TextEditorView, View, SelectListView, ScrollView} = require 'atom-space-pen-views'
+{$} = require 'atom-space-pen-views'
+Dialog = require './dialog'
 
 module.exports =
-class ProfilerView extends ScrollView
-  @content: ->
-    @div outlet:"main", class:"atom-slime-profiler padded", =>
-      @h1 outlet:"profiler-toggle-func-title", =>
-          @text "Toggle profiling of a function"
-      @input id:"profiler-function-input", outlet:"profiler-function-input", class:"input-text", type:"text", placeholder:"Input <function name>, then hit enter"
-      @h1 outlet:"profiler-package-title", =>
-          @text "Profile all functions in a package"
-      @input id:"profiler-package-input", outlet:"profiler-package-input", class:"input-text", type:"text", placeholder:"Input <package name>, then hit enter"
-      @h1 outlet:"commands-title", =>
-          @text "Profiler Commands"
-      @div class:"select-list", =>
-        @ol outlet:"profiler-command-list", class:'list-group', =>
-          @li class:"", =>
-            @button id:"profiler-unprofile-button", class:"inline-block-tight btn btn-lg", "Unprofile"
-            @text "Unprofile all functions"
-          @li class:"", =>
-            @button id:"profiler-report-button", class:"inline-block-tight btn btn-lg", "Report"
-            @text "Report the profiler data"
-          @li class:"", =>
-            @button id:"profiler-reset-button", class:"inline-block-tight btn btn-lg", "Reset"
-            @text "Reset the profiler data"
+class ProfilerView
+  constructor: (sw) ->
+    @swank = sw
+    @enabled = false
+    @content = $('<div>').addClass('inline-block')
+    @content.css({'max-width':'100vw', 'margin-left':'32px'}) # Prevent from getting cut off
+    @main = $('<div>')
+    @content.append(@main)
+    console.log(@swank)
 
-  setup: (@swank) ->
-    this.find('#profiler-function-input').on 'keydown', (event) =>
+  toggle: ->
+    if @enabled
+      @main.html('')
+      @enabled = false
+    else
+      prof_menu = '<b>Profile</b>: '
+      prof_menu += '&nbsp;&nbsp;&nbsp; <a href="#" id="prof-func">Function</a> '
+      prof_menu += '&nbsp;&middot;&nbsp; <a href="#" id="prof-pack">Package</a> '
+      prof_menu += '&nbsp;&middot;&nbsp; <a href="#" id="prof-unprof">Unprofile All</a> '
+      prof_menu += '&nbsp;&middot;&nbsp; <a href="#" id="prof-reset">Reset Data</a> '
+      prof_menu += '&nbsp;&middot;&nbsp; <a href="#" id="prof-report">Report</a>'
+      @main.html(prof_menu)
+      @setup()
+      @enabled = true
+
+  setup: ->
+    $('#prof-func').on 'click', (event) =>
       @profile_function_click_handler event
-    this.find('#profiler-unprofile-button').on 'click', (event) =>
+    $('#prof-pack').on 'click', (event) =>
+      @profile_package_click_handler event
+    $('#prof-unprof').on 'click', (event) =>
       @unprofile_click_handler event
-    this.find('#profiler-report-button').on 'click', (event) =>
+    $('#prof-report').on 'click', (event) =>
       @report_click_handler event
-    this.find('#profiler-reset-button').on 'click', (event) =>
+    $('#prof-reset').on 'click', (event) =>
       @reset_click_handler event
     return
 
-  unprofile_click_handler: (event) ->
+  unprofile_click_handler: ->
     @swank.profile_invoke_unprofile_all()
 
-  report_click_handler: (event) ->
+  report_click_handler: ->
     @swank.profile_invoke_report()
 
-  reset_click_handler: (event) ->
+  reset_click_handler: ->
     @swank.profile_invoke_reset()
 
-  profile_function_click_handler: (event) ->
-    if event.which is 13
-      @swank.profile_invoke_toggle_function(this.find('#profiler-function-input').val())
+  profile_function_click_handler: ->
+    func_dialog = new Dialog({prompt: "Enter Function"})
+    func_dialog.attach(((sw) -> ((func) -> sw.profile_invoke_toggle_function(func)))(@swank))
 
+  profile_package_click_handler: ->
+    func_dialog = new Dialog({prompt: "Enter Package"})
+    func_dialog.attach(((sw) -> ((pack) -> sw.profile_invoke_toggle_package(pack)))(@swank))
+
+  attach: (@statusBar) ->
+    @statusBar.addLeftTile(item: @content[0], priority: 1000)
+
+  destroy: ->
+    @content.remove()
 
   getTitle: -> "Profiler"
   getURI: -> "slime://profile"
