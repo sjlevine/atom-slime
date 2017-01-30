@@ -11,7 +11,6 @@ class ProfilerView
     @content.css({'max-width':'100vw', 'margin-left':'13px'}) # Prevent from getting cut off
     @main = $('<div>')
     @content.append(@main)
-    console.log(@swank)
 
   toggle: ->
     if @enabled

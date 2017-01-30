@@ -92,6 +92,8 @@ module.exports = AtomSlime =
     @swank.on 'disconnect', =>
       atom.notifications.addError("Disconnected from Lisp")
       @views.statusView.message('Slime not connected.')
+      if @views.profileView.enabled
+        @views.profileView.toggle()
 
   # Start a swank server and then connect to it
   swankStart: () ->
@@ -108,7 +110,10 @@ module.exports = AtomSlime =
 
   # Start up the profile view
   profileStart: () ->
-    @views.profileView.toggle()
+    if @swank.connected and @views.repl
+      @views.profileView.toggle()
+    else
+      atom.notifications.addWarning("Cannot profile without the REPL")
 
   tryToConnect: (i) ->
     if i > atom.config.get 'atom-slime.advancedSettings.connectionAttempts'

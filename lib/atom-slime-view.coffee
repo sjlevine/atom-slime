@@ -19,12 +19,13 @@ class AtomSlimeView
   # Tear down any state and detach
   destroy: ->
     @statusView?.destroy()
-    @profileView?.destroy()
     @destroyRepl()
 
 
   destroyRepl: ->
     @repl?.destroy()
+    if @profileView.enabled
+      @profileView.toggle()
 
   showRepl: ->
       # Start a REPL
