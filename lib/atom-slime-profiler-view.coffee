@@ -50,12 +50,12 @@ class ProfilerView
     @swank.profile_invoke_reset()
 
   profile_function_click_handler: ->
-    func_dialog = new Dialog({prompt: "Enter Function"})
-    func_dialog.attach(((sw) -> ((func) -> sw.profile_invoke_toggle_function(func)))(@swank))
+    func_dialog = new Dialog({prompt: "Enter Function", forpackage: false})
+    func_dialog.attach(((sw) -> ((func) -> sw.profile_invoke_toggle_function(func)))(@swank), false)
 
   profile_package_click_handler: ->
-    func_dialog = new Dialog({prompt: "Enter Package"})
-    func_dialog.attach(((sw) -> ((pack) -> sw.profile_invoke_toggle_package(pack)))(@swank))
+    func_dialog = new Dialog({prompt: "Enter Package", forpackage: true})
+    func_dialog.attach(((sw) -> ((pack,rec_calls,prof_meth) -> sw.profile_invoke_toggle_package(pack,rec_calls,prof_meth)))(@swank), true)
 
   attach: (@statusBar) ->
     @statusBar.addLeftTile(item: @content[0], priority: 9)
