@@ -26,7 +26,13 @@ module.exports =
   # A better prefix for Lisp
   getPrefix: (editor, bufferPosition) ->
     # Get the text for the line up to the triggered buffer position
-    line = editor.getTextInRange([[bufferPosition.row, (@repl?.prompt?.length or 0)], bufferPosition])
+    # If this is the REPL editor, start after the prompt -- otherwise, start
+    # at the beginning of this line
+    if editor.getTitle() == 'repl.lisp-repl'
+      start_char = @repl?.prompt?.length
+    else
+      start_char = 0
+    line = editor.getTextInRange([[bufferPosition.row, start_char], bufferPosition])
     # Match the regex to the line, and return the match
     matches = line.match(utils.lispWordRegex)
     return matches?[matches?.length - 1] or ''

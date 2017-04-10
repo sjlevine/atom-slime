@@ -40,10 +40,10 @@ https://github.com/slime/slime.git
 
 5. (Optional) Consider adding the following to your Atom keymap file:
 ```
-'atom-text-editor[data-grammar~="lisp"]':
+'atom-text-editor[data-grammar~="lisp"]:not(.autocomplete-active)':
     'tab': 'lisp-paredit:indent'
 ```
-This will allow the tab key to trigger automatic, correct indentation of your Lisp code.
+This will allow the tab key to trigger automatic, correct indentation of your Lisp code (unless there's an autocomplete menu active).
 
 6. (Optional) In Atom's `autocomplete-plus` package, consider changing the "Keymap For Confirming A Suggestion" option from "tab and enter" to just "tab". This makes autocomplete more amenable when using the REPL, so that pressing enter will complete your command rather than triggering autocomplete.
 

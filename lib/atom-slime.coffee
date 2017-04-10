@@ -105,6 +105,7 @@ module.exports = AtomSlime =
 
   # Connect the to a running swank client
   swankConnect: () ->
+    atom.notifications.addInfo('Please wait...')
     @tryToConnect 0
 
 
