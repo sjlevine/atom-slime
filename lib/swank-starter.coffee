@@ -14,6 +14,8 @@ class SwankStarter
       atom.notifications.addWarning("Did you set up `atom-slime` as noted in the package's preferences? The \"Slime Path\" directory can't be opened. Please double check it!")
       return false
     command = @lisp
+    @lispOptionsString = atom.config.get 'atom-slime.lispOptionsString'
+    @lispOptionsEnabled = atom.config.get 'atom-slime.lispOptionsEnabled'
     args = []
     args.push 'run' if command.match(/ros/)
     if not command.match(/clisp|lw/)
@@ -21,6 +23,7 @@ class SwankStarter
     else
       args.push '-load' if command.match(/lw/)
     args.push @swank_script
+    args.push @lispOptionsString if @lispOptionsEnabled
     @process = new BufferedProcess({
       command: command,
       args: args,

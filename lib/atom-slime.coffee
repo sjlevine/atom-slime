@@ -21,13 +21,27 @@ module.exports = AtomSlime =
       description: 'Path to where SLIME resides on your computer.'
       type: 'string'
       default: '/home/username/Desktop/slime'
-      order: 3
+      order: 5
 
     lispName:
       title: 'Lisp Process'
       description: 'Name of Lisp to run'
       type: 'string'
       default: 'sbcl'
+      order: 4
+
+    lispOptionsString:
+      title: 'Additional options for the Lisp process'
+      description: ''
+      type: 'string'
+      default: '--no-linedit'
+      order: 3
+
+    lispOptionsEnabled:
+      title: 'Enable Lisp process options'
+      description: 'When checked, the Lisp process with started with supplied options.'
+      type: 'boolean'
+      default: false
       order: 2
 
     autoStart:
