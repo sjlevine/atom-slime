@@ -238,7 +238,7 @@ class REPLView
     # Debug functions
     @swank.on 'debug_setup', (obj) => @createDebugTab(obj)
     @swank.on 'debug_activate', (obj) =>
-     @showDebugTab(obj.level)
+      @showDebugTab(obj.level)
     @swank.on 'debug_return', (obj) =>
       @closeDebugTab(obj.level)
 
@@ -316,9 +316,12 @@ class REPLView
     @dbgv = []
     process.nextTick =>
     @subs.add atom.workspace.addOpener (filePath) =>
-      if filePath.startsWith('slime://debug/')
+      if filePath.match(///^slime://debug/\d+$///)
         level = filePath.slice(14)
         return @dbgv[level-1]
+      if filePath.match(///^slime://debug/\d+/frame$///)
+        level = filePath.slice(14, -6)
+        return @dbgv[level-1].frame_info
     @subs.add @replPane.onWillDestroyItem (e) =>
       if e.item in @dbgv
         level = e.item.info.level #1 based indices
@@ -328,6 +331,10 @@ class REPLView
         if e.item.active
           @swank.debug_abort_current_level(e.item.level, e.item.info.thread)
           e.item.active = false
+        if e.item.frame_info?
+          @replPane.destroyItem(e.item.frame_info)
+
+
   createDebugTab: (obj) ->
     if obj.level > @dbgv.length
       @dbgv.push(new DebuggerView)
