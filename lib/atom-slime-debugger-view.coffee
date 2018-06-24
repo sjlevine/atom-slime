@@ -39,6 +39,8 @@ class DebuggerView extends ScrollView
     @errorType.html @info.type
     level = @info.level
     thread = @info.thread
+    @active = true
+
     @restarts.empty()
     for restart, i in @info.restarts
       @restarts.append $$ ->
@@ -58,6 +60,7 @@ class DebuggerView extends ScrollView
     restartindex = event.target.getAttribute('restartindex')
     level = event.target.getAttribute('level')
     thread = event.target.getAttribute('thread')
+    @active = false
     @swank.debug_invoke_restart(level, restartindex, thread)
 
   load_full_stack_trace: (event) ->
@@ -76,6 +79,6 @@ class DebuggerView extends ScrollView
 
 
   getTitle: -> "Debugger"
-  getURI: -> "slime://debug" # TODO -- fix
+  getURI: -> "slime://debug/"+@info.level
   isEqual: (other) ->
-    other instanceof DebuggerView
+    other instanceof DebuggerView and other.info.level == @info.level
