@@ -35,7 +35,7 @@ class DebuggerView extends ScrollView
             @text "Description of frame 3"
       @button outlet:"fullStackTrace", class:"inline-block-tight btn", "Show All Stack Frames"
 
-  setup: (@swank, @info) ->
+  setup: (@swank, @info, @replView) ->
     @errorTitle.html @info.title
     @errorType.html @info.type
     level = @info.level

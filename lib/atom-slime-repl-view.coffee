@@ -339,7 +339,7 @@ class REPLView
     if obj.level > @dbgv.length
       @dbgv.push(new DebuggerView)
     debug = @dbgv[obj.level-1]
-    debug.setup(@swank, obj)
+    debug.setup(@swank, obj, @)
 
   showDebugTab: (level) ->
     # A slight pause is needed before showing for when an error occurs immediatly after resolving another error

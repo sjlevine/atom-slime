@@ -17,12 +17,24 @@ class FrameInfoView extends ScrollView
         @h3 'Catch Tags'
         @ol outlet:'catchTags', start:'0', =>
           @li 'Description of tag 0'
-      @button outlet:'viewSource', class:'inline-block-tightb btn', 'View Frame Source'
-      @button outlet:'restartFrame', class:'inline-block-tight btn', 'Restart Frame'
-      @input outlet:'frameReturnValue', class:'inline-block-tight', type:'text'
-      @button outlet:'returnFromFrame', class:'inline-block-tight btn', 'Return From Frame'
-      @button outlet:'disassemble', class:'inline-block-tight btn', 'Disassemble Frame'
-      @div outlet:'disassembleOutput'
+      @div class:'select-list', =>
+        @ol class:'list-group mark-active', =>
+          @li =>
+            @button outlet:'viewSource', class:'inline-block-tight btn', 'View Frame Source'
+          @li =>
+            @button outlet:'restartFrame', class:'inline-block-tight btn', 'Restart Frame'
+          @li =>
+            @button outlet:'disassemble', class:'inline-block-tight btn', 'Disassemble Frame'
+        @div outlet:'disassembleDiv', =>
+          @h3 'Disassembled:'
+          @span outlet:'disassembleOutput', class:'slime-message', ''
+        @ol class:'list-group mark-active', =>
+          @li =>
+            @input outlet:'frameReturnValue', class:'native-key-bindings', type:'text', size:50
+          @li =>
+            @button outlet:'returnFromFrame', class:'inline-block-tight btn', 'Return From Frame'
+          @li =>
+            @button outlet:'evalInFrame', class:'inline-block-tight btn', 'Eval in Frame'
 
   setup: (@swank, @info, @frame_index, @debugView) ->
     frame = @info.stack_frames[@frame_index]
@@ -51,14 +63,23 @@ class FrameInfoView extends ScrollView
     else
       @restartFrame[0].disabled = true
 
+    @disassembleDiv.hide()
+    @disassemble.on 'click', (event) =>
+      @swank.debug_disassemble_frame(@frame_index, @info.thread).then (output) =>
+        @disassembleOutput.text(output)
+        @disassembleDiv.show()
+
     @returnFromFrame.on 'click', (event) =>
       @debugView.active = false
       @swank.debug_return_from_frame(@frame_index, @frameReturnValue[0].value, @info.thread)
 
-    @disassembleOutput.text = ''
-    @disassemble.on 'click', (event) =>
-      @swank.debug_disassemble_frame(@frame_index, @info.thread).then (output) =>
-        @disassembleOutput.text = output
+    @evalInFrame.on 'click', (event) =>
+      input = @frameReturnValue.val()
+      @frameReturnValue.val('')
+      @swank.debug_eval_in_frame(@frame_index, input, @info.thread).then (result) =>
+        replView = @debugView.replView
+        replView.print_string_callback(result+'\n')
+        replView.replPane.activateItem(replView.editor)
 
     @swank.debug_stack_frame_details(@frame_index, @info.stack_frames, @info.thread).then (frame) =>
       @locals.empty()
