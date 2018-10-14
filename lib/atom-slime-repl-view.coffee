@@ -62,18 +62,41 @@ class REPLView
     # Attach event handlers
     @subs.add atom.commands.add @editorElement, 'core:backspace': (event) =>
       # Check buffer position!
-      point = @editor.getCursorBufferPosition()
-      if point.column <= @prompt.length or point.row < @editor.getLastBufferRow()
-        event.stopImmediatePropagation()
+      ranges = @editor.getSelectedBufferRanges()
+      for range in ranges
+        if range.start.isEqual(range.end)
+          # no selection, need to check that the previous character is backspace-able
+          point = range.start
+          if point.column <= @prompt.length or point.row < @editor.getLastBufferRow()
+            event.stopImmediatePropagation()
+            return
+        else
+          # range selected, need to check that selection is backspace-able
+          if range.start.column < @prompt.length or range.end.column < @prompt.length or
+                range.start.row < @editor.getLastBufferRow() or
+                range.end.row < @editor.getLastBufferRow()
+            event.stopImmediatePropagation()
+            return
 
     @subs.add atom.commands.add @editorElement, 'core:delete': (event) =>
-      point = @editor.getCursorBufferPosition()
-      if point.column < @prompt.length or point.row < @editor.getLastBufferRow()
-        event.stopImmediatePropagation()
+      ranges = @editor.getSelectedBufferRanges()
+      for range in ranges
+        # need to check that both start and end of selection are valid
+        if range.start.column < @prompt.length or range.end.column < @prompt.length or
+              range.start.row < @editor.getLastBufferRow() or
+              range.end.row < @editor.getLastBufferRow()
+          event.stopImmediatePropagation()
+          return
 
     @subs.add atom.commands.add @editorElement, 'core:cut': (event) =>
-      # TODO - prevent cutting here. We can make this better.
-      event.stopImmediatePropagation()
+      ranges = @editor.getSelectedBufferRanges()
+      for range in ranges
+        # need to check that both start and end of selection are valid
+        if range.start.column < @prompt.length or range.end.column < @prompt.length or
+              range.start.row < @editor.getLastBufferRow() or
+              range.end.row < @editor.getLastBufferRow()
+          event.stopImmediatePropagation()
+          return
 
     # Prevent undo / redo
     @subs.add atom.commands.add @editorElement, 'core:undo': (event) => event.stopImmediatePropagation()
