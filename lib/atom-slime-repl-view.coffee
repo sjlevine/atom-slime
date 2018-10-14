@@ -6,6 +6,7 @@ module.exports =
 class REPLView
   pkg: "CL-USER"
   prompt: "> "
+  promptMarker: null
   preventUserInput: false
   inputFromUser: true
   # Keep track of command history, for use with the up/down arrows
@@ -62,39 +63,33 @@ class REPLView
     # Attach event handlers
     @subs.add atom.commands.add @editorElement, 'core:backspace': (event) =>
       # Check buffer position!
-      ranges = @editor.getSelectedBufferRanges()
-      for range in ranges
-        if range.start.isEqual(range.end)
+      selections = @editor.getSelectedBufferRanges()
+      for selection in selections
+        if selection.start.isEqual(selection.end)
           # no selection, need to check that the previous character is backspace-able
-          point = range.start
-          if point.column <= @prompt.length or point.row < @editor.getLastBufferRow()
+          point = selection.start
+          if @promptMarker.getBufferRange().containsPoint(point) or selection.row < @editor.getLastBufferRow()
             event.stopImmediatePropagation()
             return
         else
           # range selected, need to check that selection is backspace-able
-          if range.start.column < @prompt.length or range.end.column < @prompt.length or
-                range.start.row < @editor.getLastBufferRow() or
-                range.end.row < @editor.getLastBufferRow()
+          if @promptMarker.getBufferRange().intersectsWith(selection, true) or selection.start.row < @editor.getLastBufferRow()
             event.stopImmediatePropagation()
             return
 
     @subs.add atom.commands.add @editorElement, 'core:delete': (event) =>
-      ranges = @editor.getSelectedBufferRanges()
-      for range in ranges
+      selections = @editor.getSelectedBufferRanges()
+      for selection in selections
         # need to check that both start and end of selection are valid
-        if range.start.column < @prompt.length or range.end.column < @prompt.length or
-              range.start.row < @editor.getLastBufferRow() or
-              range.end.row < @editor.getLastBufferRow()
+        if @promptMarker.getBufferRange().intersectsWith(selection, true) or selection.start.row < @editor.getLastBufferRow()
           event.stopImmediatePropagation()
           return
 
     @subs.add atom.commands.add @editorElement, 'core:cut': (event) =>
-      ranges = @editor.getSelectedBufferRanges()
-      for range in ranges
+      selections = @editor.getSelectedBufferRanges()
+      for selection in selections
         # need to check that both start and end of selection are valid
-        if range.start.column < @prompt.length or range.end.column < @prompt.length or
-              range.start.row < @editor.getLastBufferRow() or
-              range.end.row < @editor.getLastBufferRow()
+        if @promptMarker.getBufferRange().intersectsWith(selection, true) or selection.start.row < @editor.getLastBufferRow()
           event.stopImmediatePropagation()
           return
 
@@ -155,27 +150,30 @@ class REPLView
   isAutoCompleteActive: () ->
     return $(@editorElement).hasClass('autocomplete-active')
 
+  markPrompt: (promptRange) ->
+    range = new Range([0, 0], promptRange.end)
+    @promptMarker = @editor.markBufferRange(range, {exclusive: true})
+    syntaxRange = new Range(promptRange.start, [promptRange.end.row, promptRange.end.column-1])
+    syntaxMarker = @editor.markBufferRange(syntaxRange, {exclusive: true})
+    @editor.decorateMarker(syntaxMarker, {type: 'text', class:'syntax--repl-prompt syntax--keyword syntax--control syntax--lisp'})
 
   clearREPL: () ->
     @editor.setText @prompt
+    range = @editor.getBuffer().getRange()
+    @markPrompt(range)
     @editor.moveToEndOfLine()
+
+    marker = @editor.markBufferPosition(new Point(0, 0))
+    @editor.decorateMarker marker, {type:'line',class:'repl-line'}
 
 
   # Adds non-user-inputted text to the REPL
   appendText: (text, colorTags=true) ->
     @inputFromUser = false
-    if colorTags
-      @editor.insertText("\x1B#{text}\x1B")
-    else
-      @editor.insertText(text)
+    range = @editor.insertText(text)
+    marker = @editor.markBufferRange(range, {exclusive: true})
+    @editor.decorateMarker(marker, {type: 'text', class:'syntax--string syntax--quoted syntax--double syntax--lisp'})
     @inputFromUser = true
-
-
-  appendPresentationMarker: () ->
-    @inputFromUser = false
-    @editor.insertText("\x1A")
-    @inputFromUser = true
-
 
   # Retrieve the string of the user's input
   getUserInput: (text) ->
@@ -204,11 +202,17 @@ class REPLView
 
 
   insertPrompt: () ->
-    @appendText("\n" + @prompt, false)
+    @inputFromUser = false
+
+    @editor.insertText("\n")
+    range = @editor.insertText(@prompt)[0]
+    @markPrompt(range)
+
     # Now, mark it
-    row = @editor.getLastBufferRow()
-    marker = @editor.markBufferPosition(new Point(row,0))
+    marker = @editor.markBufferPosition(range.start)
     @editor.decorateMarker marker, {type:'line',class:'repl-line'}
+
+    @inputFromUser = true
 
 
   setupSwankSubscriptions: () ->
@@ -220,10 +224,16 @@ class REPLView
       @print_string_callback(msg)
 
     # On printing presentation visualizations (like for results)
-    @swank.on 'presentation_start', () =>
-      @appendPresentationMarker()
-    @swank.on 'presentation_end', () =>
-      @appendPresentationMarker()
+    @presentation_starts = {}
+    @swank.on 'presentation_start', (pid) =>
+      @presentation_starts[pid] = @editor.getBuffer().getRange().end
+    @swank.on 'presentation_end', (pid) =>
+      presentation_end = @editor.getBuffer().getRange().end
+      range = new Range(@presentation_starts[pid], presentation_end)
+      marker = @editor.markBufferRange(range, {exclusive: true})
+      #TODO should this just be syntax--lisp and let the lisp.cson find the best class (otherwise numbers/strings/ect don't get highlighting)
+      @editor.decorateMarker(marker, {type: 'text', class:'syntax--variable syntax--other syntax--global syntax--lisp'})
+      delete @presentation_starts[pid]
 
     # Debug functions
     @swank.on 'debug_setup', (obj) => @createDebugTab(obj)
