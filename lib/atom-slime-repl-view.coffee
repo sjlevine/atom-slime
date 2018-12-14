@@ -308,9 +308,9 @@ class REPLView
     # Sets the command at the prompt
     lastrow = @editor.getLastBufferRow()
     lasttext = @editor.lineTextForBufferRow(lastrow)
-    range = new Range([lastrow, 0], [lastrow, lasttext.length])
-    newtext = "#{@prompt}#{cmd}"
-    @editor.setTextInBufferRange(range, newtext)
+    promptEnd = @promptMarker.getBufferRange().end
+    range = new Range(promptEnd, [lastrow, lasttext.length])
+    @editor.setTextInBufferRange(range, cmd)
     @editor.getBuffer().groupLastChanges()
 
 
