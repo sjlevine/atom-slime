@@ -310,7 +310,8 @@ class REPLView
     lasttext = @editor.lineTextForBufferRow(lastrow)
     range = new Range([lastrow, 0], [lastrow, lasttext.length])
     newtext = "#{@prompt}#{cmd}"
-    @editor.setTextInBufferRange(range, newtext, undo:'skip')
+    @editor.setTextInBufferRange(range, newtext)
+    @editor.getBuffer().groupLastChanges()
 
 
   setupDebugger: () ->
