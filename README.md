@@ -58,7 +58,7 @@ Once you've followed the above steps, you should have:
 - Syntax highlighting if you open a file ending in `.lisp`
 - Proper lisp indentation when you hit tab
 
-To start a REPL (an interactive terminal where you can interact with Lisp live), run the `Slime: Start` command from the command pallet. A REPL should then pop up. Note that if this is your first time using `atom-slime`, or you've updated your lisp process, you may get some warning messages about not being able to connect. This is normal; wait a minute or so, restart Atom, and try again and it should work. (This happens because your lisp is compiling the swank server and isn't ready before this package times out).
+To start a REPL (an interactive terminal where you can interact with Lisp live), run the `Slime: Start` command from the command pallete. A REPL should then pop up. Note that if this is your first time using `atom-slime`, or you've updated your lisp process, you may get some warning messages about not being able to connect. This is normal; wait a minute or so, restart Atom, and try again and it should work. (This happens because your lisp is compiling the swank server and isn't ready before this package times out).
 
 With the REPL, you can type commands, see results, switch packages, and more. It's a great way to write Lisp code! A debugger will come up if an error occurs. You can also use the up & down arrows to scroll up through your past commands. type <kbd>Ctrl</kbd>+<kbd>C</kbd> to interrupt lisp (if it's in an infinite loop, for example).
 
