@@ -71,7 +71,9 @@ class FrameInfoView extends ScrollView
 
     @returnFromFrame.on 'click', (event) =>
       @debugView.active = false
-      @swank.debug_return_from_frame(@frame_index, @frameReturnValue[0].value, @info.thread)
+      @swank.debug_return_from_frame(@frame_index, @frameReturnValue.val(), @info.thread)
+      .catch (errorMessage) =>
+        atom.notifications.addError(errorMessage)
 
     @evalInFrame.on 'click', (event) =>
       input = @frameReturnValue.val()
