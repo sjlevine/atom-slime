@@ -198,9 +198,8 @@ class REPLView
 
     input = @getUserInput()
     ast = paredit.parse(input)
-    if ast.errors.length > 0
+    if ast.errors.find((err) -> err.error.indexOf('but reached end of input') != -1)
       # missing ending parenthesis, use default system to add newline
-      console.log ast.errors
       return
 
     # Push this command to the ring if applicable
