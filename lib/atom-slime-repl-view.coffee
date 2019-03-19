@@ -68,12 +68,12 @@ class REPLView
         if selection.start.isEqual(selection.end)
           # no selection, need to check that the previous character is backspace-able
           point = selection.start
-          if @promptMarker.getBufferRange().containsPoint(point) or selection.row < @editor.getLastBufferRow()
+          if @promptMarker.getBufferRange().containsPoint(point)
             event.stopImmediatePropagation()
             return
         else
           # range selected, need to check that selection is backspace-able
-          if @promptMarker.getBufferRange().intersectsWith(selection, true) or selection.start.row < @editor.getLastBufferRow()
+          if @promptMarker.getBufferRange().intersectsWith(selection, true)
             event.stopImmediatePropagation()
             return
 
@@ -81,7 +81,7 @@ class REPLView
       selections = @editor.getSelectedBufferRanges()
       for selection in selections
         # need to check that both start and end of selection are valid
-        if @promptMarker.getBufferRange().intersectsWith(selection, true) or selection.start.row < @editor.getLastBufferRow()
+        if @promptMarker.getBufferRange().intersectsWith(selection, true)
           event.stopImmediatePropagation()
           return
 
@@ -89,7 +89,7 @@ class REPLView
       selections = @editor.getSelectedBufferRanges()
       for selection in selections
         # need to check that both start and end of selection are valid
-        if @promptMarker.getBufferRange().intersectsWith(selection, true) or selection.start.row < @editor.getLastBufferRow()
+        if @promptMarker.getBufferRange().intersectsWith(selection, true)
           event.stopImmediatePropagation()
           return
 
@@ -103,9 +103,13 @@ class REPLView
     @subs.add @editor.onWillInsertText (event) =>
       #console.log 'Insert: ' + event.text
       # console.log "Insert: #{event.text}"
-      point = @editor.getCursorBufferPosition()
-      if @inputFromUser and (@preventUserInput or point.column < @prompt.length or point.row < @editor.getLastBufferRow())
-        event.cancel()
+      if @inputFromUser
+        if @preventUserInput
+          event.cancel()
+        points = @editor.getCursorBufferPositions()
+        for point in points
+          if point.isLessThan(@promptMarker.getBufferRange().end)
+            event.cancel()
 
     # Set up up/down arrow previous command cycling. But don't do it
     # if the autocomplete window is active...
@@ -170,20 +174,23 @@ class REPLView
   # Adds non-user-inputted text to the REPL
   appendText: (text, colorTags=true) ->
     @inputFromUser = false
-    range = @editor.insertText(text)
-    marker = @editor.markBufferRange(range, {exclusive: true})
-    @editor.decorateMarker(marker, {type: 'text', class:'syntax--string syntax--quoted syntax--double syntax--lisp'})
+    range = @editor.insertText(text, {autoIndent:false,autoIndentNewline:false})
+    if colorTags
+      marker = @editor.markBufferRange(range, {exclusive: true})
+      @editor.decorateMarker(marker, {type: 'text', class:'syntax--string syntax--quoted syntax--double syntax--lisp'})
     @inputFromUser = true
 
   # Retrieve the string of the user's input
   getUserInput: (text) ->
-    lastLine = @editor.lineTextForBufferRow(@editor.getLastBufferRow())
-    return lastLine[@prompt.length..]
+    lastrow = @editor.getLastBufferRow()
+    lasttext = @editor.lineTextForBufferRow(lastrow)
+    promptEnd = @promptMarker.getBufferRange().end
+    range = new Range(promptEnd, [lastrow, lasttext.length])
+    return @editor.getTextInBufferRange(range)
 
 
   handleEnter: (event) ->
-    point = @editor.getCursorBufferPosition()
-    if point.row == @editor.getLastBufferRow() and !@preventUserInput and @swank.connected
+    if !@preventUserInput and @swank.connected
       input = @getUserInput()
       # Push this command to the ring if applicable
       if input != '' and @previousCommands[@previousCommands.length - 1] != input
@@ -191,7 +198,7 @@ class REPLView
       @cycleIndex = @previousCommands.length
 
       @preventUserInput = true
-      @editor.moveToEndOfLine()
+      @editor.moveToBottom()
       @appendText("\n",false)
       promise = @swank.eval input, @pkg
       promise.then =>
@@ -204,8 +211,8 @@ class REPLView
   insertPrompt: () ->
     @inputFromUser = false
 
-    @editor.insertText("\n")
-    range = @editor.insertText(@prompt)[0]
+    @editor.insertText("\n", {autoIndent:false,autoIndentNewline:false})
+    range = @editor.insertText(@prompt, {autoIndent:false,autoIndentNewline:false})[0]
     @markPrompt(range)
 
     # Now, mark it
@@ -262,9 +269,9 @@ class REPLView
       # insert the message, then go back down to the corresponding line in the REPL!
       # But only move the user's cursor back to the REPL line if it was there to
       # begin with, otherwise put it back at it's absolute location.
-      p_cursor = @editor.getCursorBufferPosition()
-      row_repl = @editor.getLastBufferRow()
-      cursor_originally_in_repl = (p_cursor.row == row_repl)
+      p_cursors = @editor.getCursorBufferPositions()
+      original_prompt_end = @promptMarker.getBufferRange().end
+      row_repl = original_prompt_end.row
       # Edge case: if the row is the last line, insert a new line right above then continue.
       if row_repl == 0
         @editor.setCursorBufferPosition([0, 0])
@@ -274,12 +281,20 @@ class REPLView
       p_before_cursor = Point(row_repl - 1, @editor.lineTextForBufferRow(row_repl - 1).length)
       @editor.setCursorBufferPosition(p_before_cursor, {autoScroll: false})
       @appendText(msg)
-      if cursor_originally_in_repl
-        # Put back in the REPL (which may now have a different row/line)
-        @editor.setCursorBufferPosition([@editor.getLastBufferRow(), p_cursor.column])
-      else
-        # Put back the cursor where it was
-        @editor.setCursorBufferPosition(p_cursor)
+
+      # Map cursors above the REPL to the same spot
+      # Map cursors at the REPL based on the change in the prompt's end location
+      new_prompt_end = @promptMarker.getBufferRange().end
+      row_offset = new_prompt_end.row-original_prompt_end.row
+      col_offset = Math.min(new_prompt_end.column-original_prompt_end.column, 0)
+      p_cursors = for point in p_cursors
+        if point.row < original_prompt_end.row
+          point
+        else
+          [point.row+row_offset, point.column+col_offset]
+      @editor.setCursorBufferPosition(p_cursors[0])
+      for point in p_cursors[1..]
+        @editor.addCursorAtBufferPosition(point)
 
 
 
