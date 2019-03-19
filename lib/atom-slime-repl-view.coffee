@@ -1,6 +1,7 @@
 {CompositeDisposable, Point, Range} = require 'atom'
 {$, TextEditorView, View} = require 'atom-space-pen-views'
 DebuggerView = require './atom-slime-debugger-view'
+paredit = require 'paredit.js'
 
 module.exports =
 class REPLView
@@ -190,22 +191,34 @@ class REPLView
 
 
   handleEnter: (event) ->
-    if !@preventUserInput and @swank.connected
-      input = @getUserInput()
-      # Push this command to the ring if applicable
-      if input != '' and @previousCommands[@previousCommands.length - 1] != input
-        @previousCommands.push input
-      @cycleIndex = @previousCommands.length
+    if @preventUserInput or !@swank.connected
+      # Can't process it right now
+      event.stopImmediatePropagation()
+      return
 
-      @preventUserInput = true
-      @editor.moveToBottom()
-      @appendText("\n",false)
-      promise = @swank.eval input, @pkg
-      promise.then =>
-        @insertPrompt()
-        @preventUserInput = false
-    # Stop the enter
+    input = @getUserInput()
+    ast = paredit.parse(input)
+    if ast.errors.length > 0
+      # missing ending parenthesis, use default system to add newline
+      console.log ast.errors
+      return
+
+    # Push this command to the ring if applicable
+    if input != '' and @previousCommands[@previousCommands.length - 1] != input
+      @previousCommands.push input
+    @cycleIndex = @previousCommands.length
+
+    @preventUserInput = true
+    @editor.moveToBottom()
+    @appendText("\n",false)
+    promise = @swank.eval input, @pkg
+    promise.then =>
+      @insertPrompt()
+      @preventUserInput = false
+
+    # Stop enter
     event.stopImmediatePropagation()
+
 
 
   insertPrompt: () ->
