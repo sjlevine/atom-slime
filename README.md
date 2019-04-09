@@ -4,6 +4,9 @@ Integrates SLIME (the Superior Lisp Interaction Mode for Emacs) with Atom! This 
 
 ![screenshot](https://raw.githubusercontent.com/sjlevine/atom-slime/master/media/atom-slime-screenshot.png)
 
+
+**Note**: *It's been hard to find the time to actively maintain this project. For a more recently-maintained version, please see the [SLIMA Project](https://github.com/neil-lindquist/SLIMA), which builds off the code here. Good luck!*
+
 Current features of this package:
 
 - Read-eval-print-loop (REPL) for interactive Lisp development
@@ -19,9 +22,6 @@ Future features:
 - Stack trace in debugger
 - "Compile this file" command
 - "Who calls this function" command
-
-
-**Note**: This package is still in beta and in active development! Contributions and bug reports are welcome.
 
 
 
