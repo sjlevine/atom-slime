@@ -22,7 +22,6 @@ Current features of this package:
 
 Future features:
 - Interactive object inspection
-- Stack trace in debugger
 - "Compile this file" command
 - "Who calls this function" command
 

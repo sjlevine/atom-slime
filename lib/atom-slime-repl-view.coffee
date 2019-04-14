@@ -238,11 +238,9 @@ class REPLView
     # Debug functions
     @swank.on 'debug_setup', (obj) => @createDebugTab(obj)
     @swank.on 'debug_activate', (obj) =>
-     # TODO - keep track of differnet levels
-     @showDebugTab()
+      @showDebugTab(obj.level)
     @swank.on 'debug_return', (obj) =>
-      # TODO - keep track of different levels
-      @closeDebugTab()
+      @closeDebugTab(obj.level)
 
     # Profile functions
     @swank.on 'profile_command_complete', (msg) =>
@@ -315,28 +313,47 @@ class REPLView
 
 
   setupDebugger: () ->
+    @dbgv = []
     process.nextTick =>
     @subs.add atom.workspace.addOpener (filePath) =>
-        if filePath == 'slime://debug'
-          return @dbgv
+      if filePath.match(///^slime://debug/\d+$///)
+        level = filePath.slice(14)
+        return @dbgv[level-1]
+      if filePath.match(///^slime://debug/\d+/frame$///)
+        level = filePath.slice(14, -6)
+        return @dbgv[level-1].frame_info
     @subs.add @replPane.onWillDestroyItem (e) =>
-      if e.item == @dbgv
-        @swank.debug_escape_all()
+      if e.item in @dbgv
+        level = e.item.info.level #1 based indices
+        if level < @dbgv.length
+          #recursively delete lower levels
+          @closeDebugTab(level+1)
+        if e.item.active
+          @swank.debug_abort_current_level(e.item.level, e.item.info.thread)
+          e.item.active = false
+        if e.item.frame_info?
+          @replPane.destroyItem(e.item.frame_info)
 
 
   createDebugTab: (obj) ->
-    @dbgv = new DebuggerView
-    @dbgv.setup(@swank, obj)
+    if obj.level > @dbgv.length
+      @dbgv.push(new DebuggerView)
+    debug = @dbgv[obj.level-1]
+    debug.setup(@swank, obj, @)
 
-  showDebugTab: () ->
-    @replPane.activate()
-    atom.workspace.open('slime://debug').then (d) =>
-      # TODO - doesn't work
-      #elt = atom.views.getView(d)
-      #atom.commands.add elt, 'q': (event) => @closeDebugTab()
+  showDebugTab: (level) ->
+    # A slight pause is needed before showing for when an error occurs immediatly after resolving another error
+    setTimeout(() =>
+      @replPane.activate()
+      atom.workspace.open('slime://debug/'+level).then (d) =>
+        # TODO - doesn't work
+        #elt = atom.views.getView(d)
+        #atom.commands.add elt, 'q': (event) => @closeDebugTab(level)
+    , 10)
 
-  closeDebugTab: () ->
-    @replPane.destroyItem(@dbgv)
+  closeDebugTab: (level) ->
+    @replPane.destroyItem(@dbgv[level-1])
+    @dbgv.pop()
 
 
   # Set the package and prompt
@@ -347,6 +364,6 @@ class REPLView
 
   destroy: ->
     if @swank.connected
-      @closeDebugTab()
+      @closeDebugTab(1)
       @subs.dispose()
       @swank.quit()
