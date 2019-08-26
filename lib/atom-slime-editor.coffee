@@ -25,6 +25,8 @@ class AtomSlimeEditor
       @openDefinition()
     @subs.add atom.commands.add @editorElement, 'slime:compile-function': =>
       @compileFunction()
+    @subs.add atom.commands.add @editorElement, 'slime:compile-buffer': =>
+      @compileBuffer()
     @subs.add atom.commands.add @editorElement, 'slime:macroexpand-1': =>
       @macroexpand1()
     @subs.add atom.commands.add @editorElement, 'slime:macroexpand-all': =>
@@ -130,6 +132,21 @@ class AtomSlimeEditor
         # Trigger the highlight effect
         range = Range(p_start, p_end)
         utils.highlightRange(range, @editor, delay=250)
+
+  compileBuffer: ->
+    # Compile the entire buffer
+    if @swank.connected
+      # Retrieve the path and error out if not saved yet
+      path = @editor.getPath()
+      if not path
+        atom.notifications.addWarning("Please save this file before compiling.")
+        return false
+
+      # Trigger a compilation
+      @swank.compile_file(path, @pkg, true)
+
+      # Trigger the highlight effect
+      utils.highlightRange(Range([0, 0], @convertIndexToPoint(@editor.getText().length - 1)), @editor, delay=250)
 
   macroexpand: (fun) ->
     if @swank.connected
